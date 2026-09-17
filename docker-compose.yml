@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: mandi_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mandi_price_cloud
+      POSTGRES_USER: mandi_user
+      POSTGRES_PASSWORD: mandipassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - mandi_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mandi_user -d mandi_price_cloud"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mandi_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://mandi_user:mandipassword@db:5432/mandi_price_cloud
+      DATA_GOV_API_KEY: 579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b
+      DATA_GOV_RESOURCE_ID: 9ef84268-d588-465a-a308-a864a43d0070
+      JWT_SECRET: mandi-cloud-production-secret-key-2026
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: adminpassword
+      ENABLE_SCHEDULER: "true"
+      SYNC_INTERVAL_HOURS: 6
+      CORS_ORIGINS: '["http://localhost:3000","http://localhost:5173"]'
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mandi_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  mandi_pgdata:
+    driver: local
