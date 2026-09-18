@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LanguageProvider } from './context/LanguageContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import LandingPage from './pages/LandingPage';
@@ -36,54 +37,56 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-neutral-900 selection:bg-neutral-950 selection:text-white">
-      {/* Clean Farmer Navigation */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+    <LanguageProvider>
+      <div className="min-h-screen flex flex-col bg-white text-neutral-900 selection:bg-neutral-950 selection:text-white">
+        {/* Clean Farmer Navigation */}
+        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* Main Content Pages */}
-      <main className="flex-1">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            variants={pageVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="w-full"
-          >
-            {activeTab === 'landing' && (
-              <LandingPage
-                setActiveTab={setActiveTab}
-                onSelectCommodity={handleSelectCommodity}
-              />
-            )}
+        {/* Main Content Pages */}
+        <main className="flex-1">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="w-full"
+            >
+              {activeTab === 'landing' && (
+                <LandingPage
+                  setActiveTab={setActiveTab}
+                  onSelectCommodity={handleSelectCommodity}
+                />
+              )}
 
-            {activeTab === 'prices' && (
-              <PriceExplorerPage
-                initialCommodity={selectedCommodity}
-                onExploreTrends={handleExploreTrends}
-              />
-            )}
+              {activeTab === 'prices' && (
+                <PriceExplorerPage
+                  initialCommodity={selectedCommodity}
+                  onExploreTrends={handleExploreTrends}
+                />
+              )}
 
-            {activeTab === 'compare' && (
-              <CompareMandisPage onSelectCommodity={handleSelectCommodity} />
-            )}
+              {activeTab === 'compare' && (
+                <CompareMandisPage onSelectCommodity={handleSelectCommodity} />
+              )}
 
-            {activeTab === 'trends' && (
-              <TrendsPage initialCommodity={selectedCommodity || 'Wheat'} />
-            )}
+              {activeTab === 'trends' && (
+                <TrendsPage initialCommodity={selectedCommodity || 'Wheat'} />
+              )}
 
-            {activeTab === 'markets' && (
-              <MarketsPage onSelectMandi={handleSelectMandi} />
-            )}
+              {activeTab === 'markets' && (
+                <MarketsPage onSelectMandi={handleSelectMandi} />
+              )}
 
-            {activeTab === 'admin' && <AdminPage />}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+              {activeTab === 'admin' && <AdminPage />}
+            </motion.div>
+          </AnimatePresence>
+        </main>
 
-      {/* Minimal Footer */}
-      <Footer setActiveTab={setActiveTab} />
-    </div>
+        {/* Minimal Footer */}
+        <Footer setActiveTab={setActiveTab} />
+      </div>
+    </LanguageProvider>
   );
 }

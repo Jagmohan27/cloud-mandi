@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { Sprout, Menu, X, ArrowDownUp, TrendingUp, Store, Search } from 'lucide-react';
+import { Sprout, Menu, X, Search, Languages } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function Navbar({ activeTab, setActiveTab }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { lang, toggleLanguage, t } = useLanguage();
 
   const navItems = [
-    { id: 'landing', label: 'Home' },
-    { id: 'prices', label: "Today's Mandi Rates" },
-    { id: 'compare', label: 'Compare Mandis' },
-    { id: 'trends', label: 'Price Trends' },
-    { id: 'markets', label: 'Market Directory' },
+    { id: 'landing', label: t('navHome') },
+    { id: 'prices', label: t('navRates') },
+    { id: 'compare', label: t('navCompare') },
+    { id: 'trends', label: t('navTrends') },
+    { id: 'markets', label: t('navMarkets') },
   ];
 
   return (
@@ -28,7 +30,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
               Cloud Mandi
             </span>
             <span className="text-[11px] text-neutral-500 font-medium mt-0.5">
-              Daily Agricultural Mandi Rates (प्रति क्विंटल)
+              {t('brandSubtitle')}
             </span>
           </div>
         </button>
@@ -41,7 +43,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-200 ${
+                className={`px-3.5 py-2 rounded-full text-xs font-medium transition-all duration-200 ${
                   isActive
                     ? 'bg-neutral-950 text-white shadow-sm'
                     : 'text-neutral-600 hover:text-neutral-950 hover:bg-neutral-100'
@@ -53,19 +55,35 @@ export default function Navbar({ activeTab, setActiveTab }) {
           })}
         </nav>
 
-        {/* Quick Rate Search Action */}
+        {/* Right Actions: Language Switcher & Quick Rate Search */}
         <div className="hidden md:flex items-center space-x-3">
+          {/* Language Switcher */}
+          <button
+            onClick={toggleLanguage}
+            className="px-3 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200 border border-neutral-200 text-xs font-medium text-neutral-800 transition-colors flex items-center space-x-1.5"
+            title="Switch Language / भाषा बदलें"
+          >
+            <Languages className="w-3.5 h-3.5 text-neutral-600" />
+            <span>{lang === 'en' ? 'हिन्दी' : 'English'}</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('prices')}
             className="apple-btn-primary px-4 py-2 rounded-full text-xs font-medium flex items-center space-x-1.5 shadow-sm"
           >
             <Search className="w-3.5 h-3.5" />
-            <span>Check Crop Rates</span>
+            <span>{t('btnCheckRates')}</span>
           </button>
         </div>
 
-        {/* Mobile menu toggle */}
-        <div className="flex md:hidden items-center">
+        {/* Mobile menu toggle & quick lang */}
+        <div className="flex md:hidden items-center space-x-2">
+          <button
+            onClick={toggleLanguage}
+            className="px-2.5 py-1 rounded-full bg-neutral-100 text-xs font-medium text-neutral-800"
+          >
+            {lang === 'en' ? 'हिन्दी' : 'EN'}
+          </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg text-neutral-700 hover:bg-neutral-100"
