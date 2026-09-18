@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck } from 'lucide-react';
+import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck, Share2 } from 'lucide-react';
 import { api } from '../../services/api';
+import { shareRate } from '../../utils/share';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
 export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
@@ -160,6 +161,13 @@ export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
             Source: Official APMC Market Record
           </div>
           <div className="flex items-center space-x-2">
+            <button
+              onClick={() => shareRate(price)}
+              className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors flex items-center space-x-1.5"
+            >
+              <Share2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Share on WhatsApp</span>
+            </button>
             <button
               onClick={() => {
                 onClose();
