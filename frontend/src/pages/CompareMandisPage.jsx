@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpDown, Award, MapPin, Search, ChevronRight, TrendingUp } from 'lucide-react';
+import { ArrowUpDown, Award, MapPin, Calculator, ChevronRight, TrendingUp } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function CompareMandisPage({ onSelectCommodity }) {
@@ -9,6 +9,9 @@ export default function CompareMandisPage({ onSelectCommodity }) {
   const [selectedState, setSelectedState] = useState('');
   const [priceList, setPriceList] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Profit Calculator state
+  const [quantityQuintals, setQuantityQuintals] = useState(50);
 
   useEffect(() => {
     api.getCommodities().then(setCommodities).catch(() => []);
@@ -31,7 +34,8 @@ export default function CompareMandisPage({ onSelectCommodity }) {
 
   const bestRate = priceList[0]?.modal_price || 0;
   const lowestRate = priceList[priceList.length - 1]?.modal_price || 0;
-  const spreadDifference = bestRate - lowestRate;
+  const spreadDifference = Math.max(bestRate - lowestRate, 0);
+  const totalExtraProfit = Math.round(spreadDifference * (Number(quantityQuintals) || 0));
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -86,31 +90,66 @@ export default function CompareMandisPage({ onSelectCommodity }) {
         </div>
       </div>
 
-      {/* Value Spread Banner */}
+      {/* Profit Calculator Banner */}
       {priceList.length > 1 && (
-        <div className="p-5 rounded-2xl bg-[#F7F7F7] border border-neutral-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center text-white flex-shrink-0">
-              <Award className="w-5 h-5 text-white" />
+        <div className="p-6 rounded-3xl bg-[#F7F7F7] border border-neutral-200/80 space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-neutral-200/80">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center text-white flex-shrink-0">
+                <Calculator className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-neutral-900">
+                  Total Profit Calculator (कमाई कैलकुलेटर)
+                </div>
+                <div className="text-xs text-neutral-500">
+                  Calculate how much more money you make by selling in the top market
+                </div>
+              </div>
             </div>
-            <div>
-              <div className="text-xs font-semibold text-neutral-900">
-                Market Price Difference for {selectedCrop}
-              </div>
-              <div className="text-xs text-neutral-500 mt-0.5">
-                Selling in the top mandi gives you up to{' '}
-                <strong className="text-black font-mono">₹{spreadDifference.toLocaleString()} more per quintal</strong> compared to the lowest reporting market.
-              </div>
+
+            <div className="flex items-center space-x-2">
+              <label className="text-xs text-neutral-600 font-medium whitespace-nowrap">
+                Your Quantity (क्विंटल):
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="10000"
+                value={quantityQuintals}
+                onChange={(e) => setQuantityQuintals(Math.max(1, Number(e.target.value)))}
+                className="w-24 px-3 py-1.5 rounded-lg bg-white border border-neutral-300 text-xs font-bold font-mono text-black text-center focus:outline-none focus:border-black"
+              />
             </div>
           </div>
-          <div className="text-left sm:text-right font-mono">
-            <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">
-              Highest Rate Found
-            </span>
-            <span className="text-2xl font-bold text-neutral-950">
-              ₹{bestRate.toLocaleString()}
-            </span>
-            <span className="text-[10px] text-neutral-500 block">/ Quintal</span>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+            <div className="p-3 bg-white rounded-xl border border-neutral-100">
+              <span className="text-[10px] text-neutral-400 uppercase font-medium">
+                Highest Mandi Rate
+              </span>
+              <div className="text-lg font-bold font-mono text-black">
+                ₹{bestRate.toLocaleString()} /Q
+              </div>
+            </div>
+
+            <div className="p-3 bg-white rounded-xl border border-neutral-100">
+              <span className="text-[10px] text-neutral-400 uppercase font-medium">
+                Price Difference per Quintal
+              </span>
+              <div className="text-lg font-bold font-mono text-neutral-700">
+                +₹{spreadDifference.toLocaleString()} /Q
+              </div>
+            </div>
+
+            <div className="p-3 bg-neutral-950 text-white rounded-xl border border-black">
+              <span className="text-[10px] text-neutral-400 uppercase font-medium">
+                Estimated Extra Profit on {quantityQuintals}Q
+              </span>
+              <div className="text-xl font-bold font-mono text-emerald-400">
+                +₹{totalExtraProfit.toLocaleString()}
+              </div>
+            </div>
           </div>
         </div>
       )}
