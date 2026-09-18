@@ -81,8 +81,22 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
       setPrices(res.results || []);
       setTotalCount(res.count || 0);
       setTotalPages(res.total_pages || 1);
+      if (res.results && res.results.length > 0) {
+        try {
+          localStorage.setItem('cached_cloud_mandi_prices', JSON.stringify(res));
+        } catch {}
+      }
     } catch (err) {
-      console.error('Failed to load prices', err);
+      console.error('Failed to load prices, checking offline cache', err);
+      const cached = localStorage.getItem('cached_cloud_mandi_prices');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          setPrices(parsed.results || []);
+          setTotalCount(parsed.count || 0);
+          setTotalPages(parsed.total_pages || 1);
+        } catch {}
+      }
     } finally {
       setLoading(false);
     }
