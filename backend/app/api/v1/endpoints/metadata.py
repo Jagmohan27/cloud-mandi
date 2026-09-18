@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional, Dict, Any
@@ -10,10 +10,11 @@ from app.models.price import MandiPrice
 router = APIRouter()
 
 @router.get("/commodities")
-def get_commodities(db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
+def get_commodities(response: Response, db: Session = Depends(get_db)) -> List[Dict[str, Any]]:
     """
     Get all distinct commodities with active market price count.
     """
+    response.headers["Cache-Control"] = "public, max-age=300, s-maxage=600"
     results = db.query(
         Commodity.id,
         Commodity.name,

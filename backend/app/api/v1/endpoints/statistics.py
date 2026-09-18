@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 from datetime import date
@@ -11,10 +11,11 @@ from app.schemas.common import StatisticsResponse
 router = APIRouter()
 
 @router.get("/statistics", response_model=StatisticsResponse)
-def get_system_statistics(db: Session = Depends(get_db)):
+def get_system_statistics(response: Response, db: Session = Depends(get_db)):
     """
     Get aggregated platform statistics: total commodities, mandis, records, updates today, and coverage.
     """
+    response.headers["Cache-Control"] = "public, max-age=60, s-maxage=120"
     total_commodities = db.query(Commodity).count()
     total_mandis = db.query(Mandi).count()
     total_price_records = db.query(MandiPrice).count()
