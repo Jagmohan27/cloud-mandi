@@ -37,10 +37,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configuration
+# CORS configuration (supports local and Render deployments)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"] if "*" in settings.CORS_ORIGINS else settings.CORS_ORIGINS,
+    allow_origin_regex=r"https://.*\.onrender\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
