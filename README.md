@@ -20,9 +20,21 @@ Designed to be simple, clean, and practical for Indian farmers and agricultural 
   - Shows Lowest Rate (न्यूनतम), Today's Market Rate (बाजार भाव), and Highest Rate (अधिकतम).
   - 1-tap quick buttons for popular crops (*Wheat, Paddy, Onion, Potato, Tomato, Cotton, Soyabean, Mustard*).
 
-- **Compare Mandis (भाव तुलना)**:
+- **Compare Mandis & Profit Calculator (भाव तुलना व कमाई कैलकुलेटर)**:
   - Select a crop and state to compare prices across nearby mandis side-by-side.
   - Automatically highlights the **#1 Highest Price Mandi** and shows the price difference per quintal.
+  - **Quantity Profit Calculator**: Enter harvest quantity in quintals to see total extra money earned by choosing the top market.
+
+- **Bilingual English & Hindi Mode (हिन्दी / English)**:
+  - 1-click language switcher with persistent memory across sessions.
+  - Farmer-friendly terminology (*बाजार भाव, न्यूनतम, अधिकतम, प्रति क्विंटल*).
+
+- **WhatsApp Share & Rate Cards**:
+  - 1-tap **Share on WhatsApp** button to send preformatted rate cards directly to village farmer groups.
+
+- **PWA Mobile App & Offline Rate Caching**:
+  - Installable directly to mobile home screens like a native app.
+  - Automatically caches the latest price sheet in `localStorage` for offline review when network is spotty.
 
 - **Price Trends (भाव ट्रेंड)**:
   - Interactive charts showing price movement over **7 Days**, **30 Days**, **90 Days**, and **1 Year**.
