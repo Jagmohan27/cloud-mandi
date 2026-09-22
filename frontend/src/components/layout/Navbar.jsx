@@ -1,10 +1,32 @@
-import React, { useState } from 'react';
-import { Sprout, Menu, X, Search, Languages } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sprout, Menu, X, Search, Languages, Sun, Moon } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 
 export default function Navbar({ activeTab, setActiveTab }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { lang, toggleLanguage, t } = useLanguage();
+
+  const [isDark, setIsDark] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cm_theme');
+      if (saved) return saved === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('cm_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('cm_theme', 'light');
+      }
+    } catch {}
+  }, [isDark]);
 
   const navItems = [
     { id: 'landing', label: t('navHome') },
@@ -55,8 +77,18 @@ export default function Navbar({ activeTab, setActiveTab }) {
           })}
         </nav>
 
-        {/* Right Actions: Language Switcher & Quick Rate Search */}
+        {/* Right Actions: Language Switcher, Theme Toggle & Quick Rate Search */}
         <div className="hidden md:flex items-center space-x-3">
+          {/* Dark / Light Mode Toggle */}
+          <button
+            onClick={() => setIsDark(!isDark)}
+            className="p-2 rounded-full bg-neutral-100 hover:bg-neutral-200 border border-neutral-200 text-neutral-800 transition-colors"
+            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label="Toggle theme"
+          >
+            {isDark ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-neutral-600" />}
+          </button>
+
           {/* Language Switcher */}
           <button
             onClick={toggleLanguage}
@@ -76,8 +108,15 @@ export default function Navbar({ activeTab, setActiveTab }) {
           </button>
         </div>
 
-        {/* Mobile menu toggle & quick lang */}
+        {/* Mobile menu toggle, theme & quick lang */}
         <div className="flex md:hidden items-center space-x-2">
+          <button
+            onClick={() => setIsDark(!isDark)}
+            className="p-1.5 rounded-full bg-neutral-100 text-neutral-800 border border-neutral-200"
+            title="Toggle theme"
+          >
+            {isDark ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-neutral-600" />}
+          </button>
           <button
             onClick={toggleLanguage}
             className="px-2.5 py-1 rounded-full bg-neutral-100 text-xs font-medium text-neutral-800"

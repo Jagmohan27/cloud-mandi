@@ -2,11 +2,11 @@
 
 A full-stack agricultural market price web application and REST API powered by official Government of India open data (**AGMARKNET / data.gov.in**).
 
-Designed to be simple, clean, and practical for Indian farmers and agricultural traders.
+Designed to be simple, clean, fast, and practical for Indian farmers, traders, and agricultural cooperatives.
 
 ---
 
-## What Has Been Built & Working
+## Key Features Built & Working
 
 - **Official Government Data Ingestion**:
   - Connects to the Ministry of Agriculture's AGMARKNET API on `data.gov.in` (`resource/9ef84268-d588-465a-a308-a864a43d0070`).
@@ -20,6 +20,22 @@ Designed to be simple, clean, and practical for Indian farmers and agricultural 
   - Shows Lowest Rate (न्यूनतम), Today's Market Rate (बाजार भाव), and Highest Rate (अधिकतम).
   - 1-tap quick buttons for popular crops (*Wheat, Paddy, Onion, Potato, Tomato, Cotton, Soyabean, Mustard*).
 
+- **Official Minimum Support Price (MSP) Comparison (न्यूनतम समर्थन मूल्य)**:
+  - Compares market prices against official Government of India benchmark MSP rates.
+  - Displays instant `+X% Above MSP` (green) or `-X% Below MSP` (amber) indicators to help farmers ensure fair pricing.
+
+- **Geolocation Nearest APMC Discovery (नजदीकी मंडी खोजें)**:
+  - 1-tap "Find Mandis Near Me" button using browser geolocation and the Haversine formula.
+  - Displays distance badges (`📍 ~18 km`) on market cards and sorts nearest APMCs automatically.
+
+- **Recent Search History**:
+  - Automatically saves recent crop, mandi, and district searches to browser local storage.
+  - Displays quick clickable chips for immediate repeat queries.
+
+- **Print-Optimized Rate Sheets & PDF Export**:
+  - 1-click **Print / PDF** button with dedicated `@media print` layout.
+  - Clean A4 printable sheet for panchayat offices, notice boards, and offline distribution.
+
 - **Compare Mandis & Profit Calculator (भाव तुलना व कमाई कैलकुलेटर)**:
   - Select a crop and state to compare prices across nearby mandis side-by-side.
   - Automatically highlights the **#1 Highest Price Mandi** and shows the price difference per quintal.
@@ -28,6 +44,9 @@ Designed to be simple, clean, and practical for Indian farmers and agricultural 
 - **Bilingual English & Hindi Mode (हिन्दी / English)**:
   - 1-click language switcher with persistent memory across sessions.
   - Farmer-friendly terminology (*बाजार भाव, न्यूनतम, अधिकतम, प्रति क्विंटल*).
+
+- **Dark & Light Mode Theme Switcher**:
+  - Apple-style Sun/Moon theme toggle with local storage persistence and system preference detection.
 
 - **WhatsApp Share & Rate Cards**:
   - 1-tap **Share on WhatsApp** button to send preformatted rate cards directly to village farmer groups.
@@ -41,11 +60,14 @@ Designed to be simple, clean, and practical for Indian farmers and agricultural 
   - Shows if rates are rising or falling.
 
 - **CSV Export**:
-  - 1-click **Download Rates (CSV)** button to save current price sheets for offline use.
+  - 1-click **CSV** button to save current price sheets for spreadsheet analysis.
 
 - **Admin Sync Control**:
   - Secure Admin section with a **`[Sync Now]`** button to trigger live data fetching from `data.gov.in`.
   - Displays history logs of records added, updated, and rejected.
+
+- **Automated CI/CD Pipeline**:
+  - GitHub Actions workflow (`.github/workflows/ci.yml`) automatically runs pytest suite and Vite production build on every push and pull request.
 
 - **FastAPI REST API & Swagger UI**:
   - Clean endpoints for prices, commodities, mandis, trends, and statistics.
@@ -61,6 +83,7 @@ Designed to be simple, clean, and practical for Indian farmers and agricultural 
 | **Backend** | Python 3.11+, FastAPI, SQLAlchemy 2.0, Pydantic v2 |
 | **Database** | PostgreSQL (with SQLite fallback) |
 | **Scheduler** | APScheduler |
+| **CI / CD** | GitHub Actions |
 | **Data Source** | data.gov.in AGMARKNET Dataset |
 
 ---
@@ -69,6 +92,8 @@ Designed to be simple, clean, and practical for Indian farmers and agricultural 
 
 ```
 cloud-mandi/
+├── .github/
+│   └── workflows/ci.yml       # GitHub Actions CI workflow
 ├── backend/
 │   ├── app/
 │   │   ├── api/v1/endpoints/  # Prices, metadata, statistics, health, admin
@@ -85,6 +110,7 @@ cloud-mandi/
 │   ├── src/
 │   │   ├── components/        # Navbar, Footer, PriceDetailModal
 │   │   ├── pages/             # Landing, PriceExplorer, CompareMandis, Trends, Markets
+│   │   ├── utils/             # geoData, mspData, share
 │   │   ├── services/api.js    # API service client
 │   │   └── App.jsx            # Main app & routing
 │   ├── package.json

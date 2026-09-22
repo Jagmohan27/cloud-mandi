@@ -144,3 +144,59 @@
     box-shadow: none !important;
   }
 }
+
+/* Dark Theme Support */
+html.dark {
+  color-scheme: dark;
+}
+html.dark body {
+  background-color: #0d0d0f;
+  color: #f3f4f6;
+}
+html.dark .apple-glass {
+  background: rgba(18, 18, 20, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+html.dark .apple-glass-card {
+  background: rgba(24, 24, 27, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f3f4f6 !important;
+}
+html.dark input,
+html.dark select {
+  background-color: #1f1f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+html.dark thead {
+  background-color: #18181b !important;
+  color: #a1a1aa !important;
+}
+html.dark tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+html.dark .text-neutral-950,
+html.dark .text-neutral-900 {
+  color: #f4f4f5 !important;
+}
+html.dark .text-neutral-800,
+html.dark .text-neutral-700 {
+  color: #e4e4e7 !important;
+}
+html.dark .text-neutral-600,
+html.dark .text-neutral-500 {
+  color: #a1a1aa !important;
+}
+html.dark .bg-neutral-100 {
+  background-color: #27272a !important;
+  color: #e4e4e7 !important;
+}
+html.dark .border-neutral-200 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+html.dark .apple-btn-secondary {
+  background: #27272a !important;
+  color: #f4f4f5 !important;
+  border-color: #3f3f46 !important;
+}
+
