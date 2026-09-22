@@ -108,3 +108,39 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Print-optimized layout for A4 Rate Sheets / PDF export */
+.print-only {
+  display: none;
+}
+
+@media print {
+  header, footer, nav, .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 9pt !important;
+  }
+  .print-only {
+    display: block !important;
+    margin-bottom: 12px !important;
+  }
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  th, td {
+    border: 1px solid #d4d4d8 !important;
+    padding: 5px 8px !important;
+  }
+  th {
+    background-color: #f4f4f5 !important;
+    color: #000000 !important;
+  }
+  .apple-glass-card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}

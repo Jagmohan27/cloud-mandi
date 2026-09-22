@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, RefreshCw, X, ChevronLeft, ChevronRight, Download, SlidersHorizontal } from 'lucide-react';
+import { Search, Filter, RefreshCw, X, ChevronLeft, ChevronRight, Download, Printer, SlidersHorizontal } from 'lucide-react';
 import { api } from '../services/api';
 import PriceDetailModal from '../components/common/PriceDetailModal';
 
@@ -151,16 +151,26 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 no-print">
           {prices.length > 0 && (
-            <button
-              onClick={exportToCSV}
-              className="apple-btn-secondary px-3.5 py-2 rounded-xl text-xs font-medium flex items-center space-x-1.5 shadow-sm"
-              title="Download rates as CSV"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download Rates (CSV)</span>
-            </button>
+            <>
+              <button
+                onClick={exportToCSV}
+                className="apple-btn-secondary px-3.5 py-2 rounded-xl text-xs font-medium flex items-center space-x-1.5 shadow-sm"
+                title="Download rates as CSV"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>CSV</span>
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="apple-btn-secondary px-3.5 py-2 rounded-xl text-xs font-medium flex items-center space-x-1.5 shadow-sm"
+                title="Print rate sheet or save as PDF"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Print / PDF</span>
+              </button>
+            </>
           )}
           <button
             onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
@@ -173,7 +183,7 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
       </div>
 
       {/* 1-Tap Crop Quick Filter Chips */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
+      <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs no-print">
         <span className="text-neutral-400 font-medium whitespace-nowrap">Quick Select Crop:</span>
         {popularCrops.map((c) => {
           const isSelected = c === 'All' ? !commodity : commodity === c;
@@ -197,7 +207,7 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
       </div>
 
       {/* Main Filter Bar */}
-      <div className="apple-glass-card rounded-2xl p-5 space-y-4">
+      <div className="apple-glass-card rounded-2xl p-5 space-y-4 no-print">
         {/* Search input */}
         <div className="relative">
           <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -375,6 +385,25 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
           </div>
         )}
 
+        {/* Print-Only Official Rate Sheet Header */}
+        <div className="print-only p-4 border-b border-neutral-300">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-xl font-bold text-neutral-900">Cloud Mandi — Daily APMC Market Rate Sheet</h1>
+              <p className="text-xs text-neutral-600 mt-1">
+                Printed on: {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                {commodity ? ` • Crop: ${commodity}` : ''}
+                {state ? ` • State: ${state}` : ''}
+                {district ? ` • District: ${district}` : ''}
+              </p>
+            </div>
+            <div className="text-right text-xs text-neutral-600">
+              <p className="font-semibold">Official APMC Mandi Records</p>
+              <p>Rates in ₹ per Quintal (100 kg)</p>
+            </div>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#FAFAFA] border-b border-neutral-200/80 text-neutral-500 uppercase tracking-wider font-mono text-[10px]">
@@ -442,7 +471,7 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-neutral-100 bg-[#FAFAFA] text-xs">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-neutral-100 bg-[#FAFAFA] text-xs no-print">
           <div className="text-neutral-500 font-mono text-[11px]">
             Page {page} of {totalPages} ({totalCount} total records)
           </div>
