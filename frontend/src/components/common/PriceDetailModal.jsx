@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck, Share2 } from 'lucide-react';
+import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck, Share2, Award } from 'lucide-react';
 import { api } from '../../services/api';
 import { shareRate } from '../../utils/share';
+import { compareWithMSP } from '../../utils/mspData';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
 export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
@@ -28,6 +29,8 @@ export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
   }, [price]);
 
   if (!price) return null;
+
+  const mspComp = compareWithMSP(price.modal_price, price.commodity);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity">
@@ -92,6 +95,50 @@ export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
               <div className="text-[10px] text-neutral-400">प्रति क्विंटल</div>
             </div>
           </div>
+
+          {/* MSP Benchmark Comparison */}
+          {mspComp && (
+            <div
+              className={`p-3.5 rounded-2xl border flex items-center justify-between text-xs transition-colors ${
+                mspComp.isAbove
+                  ? 'bg-emerald-50/70 border-emerald-200/80 text-emerald-950'
+                  : 'bg-amber-50/70 border-amber-200/80 text-amber-950'
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <div
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-[11px] flex-shrink-0 ${
+                    mspComp.isAbove
+                      ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
+                      : 'bg-amber-600 text-white shadow-sm shadow-amber-600/20'
+                  }`}
+                >
+                  MSP
+                </div>
+                <div>
+                  <div className="font-semibold flex items-center space-x-2">
+                    <span>Govt MSP Benchmark: ₹{mspComp.mspRate.toLocaleString('en-IN')}/Q</span>
+                    <span
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                        mspComp.isAbove
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {mspComp.isAbove
+                        ? `+${mspComp.percent}% Above MSP`
+                        : `${mspComp.percent}% Below MSP`}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-neutral-600 mt-0.5">
+                    {mspComp.isAbove
+                      ? `Mandi rate is ₹${mspComp.diff.toLocaleString('en-IN')}/Q higher than GOI minimum support price.`
+                      : `Mandi rate is ₹${Math.abs(mspComp.diff).toLocaleString('en-IN')}/Q below GOI minimum support price.`}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 30-Day Trendline */}
           <div>

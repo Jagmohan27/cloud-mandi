@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Filter, RefreshCw, X, ChevronLeft, ChevronRight, Download, Printer, SlidersHorizontal } from 'lucide-react';
 import { api } from '../services/api';
 import PriceDetailModal from '../components/common/PriceDetailModal';
+import { compareWithMSP } from '../utils/mspData';
 
 export default function PriceExplorerPage({ initialCommodity = '', onExploreTrends }) {
   const [prices, setPrices] = useState([]);
@@ -440,9 +441,29 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
                     <td className="py-3.5 px-6 text-right font-mono text-neutral-600">
                       ₹{row.maximum_price?.toLocaleString()}
                     </td>
-                    <td className="py-3.5 px-6 text-right font-bold font-mono text-black text-sm">
-                      ₹{row.modal_price?.toLocaleString()}{' '}
-                      <span className="text-[10px] font-normal text-neutral-500">/ क्विंटल</span>
+                    <td className="py-3.5 px-6 text-right font-mono">
+                      <div className="font-bold text-black text-sm">
+                        ₹{row.modal_price?.toLocaleString()}{' '}
+                        <span className="text-[10px] font-normal text-neutral-500">/ क्विंटल</span>
+                      </div>
+                      {(() => {
+                        const msp = compareWithMSP(row.modal_price, row.commodity);
+                        if (!msp) return null;
+                        return (
+                          <div className="mt-0.5">
+                            <span
+                              className={`inline-block text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded ${
+                                msp.isAbove
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/50'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200/50'
+                              }`}
+                              title={`Official MSP: ₹${msp.mspRate.toLocaleString('en-IN')}/Q`}
+                            >
+                              {msp.isAbove ? `+${msp.percent}% vs MSP` : `${msp.percent}% vs MSP`}
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="py-3.5 px-6 text-right font-mono text-neutral-400">
                       {row.date}
