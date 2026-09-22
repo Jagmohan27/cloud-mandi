@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, RefreshCw, X, ChevronLeft, ChevronRight, Download, Printer, SlidersHorizontal } from 'lucide-react';
+import { Search, Filter, RefreshCw, X, ChevronLeft, ChevronRight, Download, Printer, SlidersHorizontal, History } from 'lucide-react';
 import { api } from '../services/api';
 import PriceDetailModal from '../components/common/PriceDetailModal';
 import { compareWithMSP } from '../utils/mspData';
@@ -30,6 +30,27 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
   // Selected Modal
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Recent searches
+  const [recentSearches, setRecentSearches] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('cm_recent_searches') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const saveSearchTerm = (term) => {
+    if (!term || term.trim().length < 2) return;
+    const clean = term.trim();
+    setRecentSearches((prev) => {
+      const next = [clean, ...prev.filter((item) => item.toLowerCase() !== clean.toLowerCase())].slice(0, 6);
+      try {
+        localStorage.setItem('cm_recent_searches', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
   // Popular crop shortcuts
   const popularCrops = ['All', 'Wheat', 'Onion', 'Potato', 'Tomato', 'Cotton', 'Soyabean', 'Mustard', 'Paddy (Dhan)'];
@@ -210,25 +231,70 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
       {/* Main Filter Bar */}
       <div className="apple-glass-card rounded-2xl p-5 space-y-4 no-print">
         {/* Search input */}
-        <div className="relative">
-          <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Type your crop name, mandi, or district (e.g. Wheat, Bisauli, Nashik)..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#F7F7F7] border border-neutral-200/80 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-black"
-          />
-          {search && (
-            <button
-              onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  saveSearchTerm(search);
+                }
+              }}
+              onBlur={() => {
+                if (search && search.trim().length >= 2) {
+                  saveSearchTerm(search);
+                }
+              }}
+              placeholder="Type your crop name, mandi, or district (e.g. Wheat, Bisauli, Nashik)..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#F7F7F7] border border-neutral-200/80 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-black"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Recent Searches Chips */}
+          {recentSearches.length > 0 && (
+            <div className="flex items-center space-x-1.5 flex-wrap gap-y-1.5 text-[11px] text-neutral-500 pt-0.5">
+              <span className="flex items-center space-x-1 text-neutral-400 font-medium">
+                <History className="w-3 h-3" />
+                <span>Recent:</span>
+              </span>
+              {recentSearches.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => {
+                    setSearch(item);
+                    setPage(1);
+                  }}
+                  className="px-2.5 py-0.5 rounded-lg bg-[#EFEFEF] hover:bg-neutral-200 text-neutral-800 font-medium transition-colors"
+                >
+                  {item}
+                </button>
+              ))}
+              <button
+                onClick={() => {
+                  setRecentSearches([]);
+                  try {
+                    localStorage.removeItem('cm_recent_searches');
+                  } catch {}
+                }}
+                className="text-neutral-400 hover:text-neutral-700 text-[10px] ml-1 underline"
+              >
+                Clear
+              </button>
+            </div>
           )}
         </div>
 
