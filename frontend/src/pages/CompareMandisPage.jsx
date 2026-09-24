@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpDown, Award, MapPin, Calculator, ChevronRight, TrendingUp } from 'lucide-react';
+import { ArrowUpDown, Award, MapPin, Calculator, ChevronRight, TrendingUp, Scale } from 'lucide-react';
 import { api } from '../services/api';
+
+const UNITS = {
+  quintal: { label: 'Quintal (क्विंटल - 100kg)', short: '/Q', factor: 1 },
+  maund: { label: 'Maund (मन - 40kg)', short: '/मन', factor: 0.4 },
+  bag: { label: 'Bori (बोरी - 50kg)', short: '/बोरी', factor: 0.5 },
+  kg: { label: 'Kilogram (किलो - 1kg)', short: '/kg', factor: 0.01 },
+};
 
 export default function CompareMandisPage({ onSelectCommodity }) {
   const [commodities, setCommodities] = useState([]);
@@ -10,8 +17,9 @@ export default function CompareMandisPage({ onSelectCommodity }) {
   const [priceList, setPriceList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Profit Calculator state
+  // Profit Calculator & Unit state
   const [quantityQuintals, setQuantityQuintals] = useState(50);
+  const [selectedUnit, setSelectedUnit] = useState('quintal');
 
   useEffect(() => {
     api.getCommodities().then(setCommodities).catch(() => []);
@@ -32,10 +40,14 @@ export default function CompareMandisPage({ onSelectCommodity }) {
       .finally(() => setLoading(false));
   }, [selectedCrop, selectedState]);
 
+  const unitInfo = UNITS[selectedUnit] || UNITS.quintal;
   const bestRate = priceList[0]?.modal_price || 0;
   const lowestRate = priceList[priceList.length - 1]?.modal_price || 0;
   const spreadDifference = Math.max(bestRate - lowestRate, 0);
-  const totalExtraProfit = Math.round(spreadDifference * (Number(quantityQuintals) || 0));
+
+  // Profit calculation based on harvest quantity in the selected unit
+  const totalQuintals = (Number(quantityQuintals) || 0) * unitInfo.factor;
+  const totalExtraProfit = Math.round(spreadDifference * totalQuintals);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -108,43 +120,69 @@ export default function CompareMandisPage({ onSelectCommodity }) {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <label className="text-xs text-neutral-600 font-medium whitespace-nowrap">
-                Your Quantity (क्विंटल):
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="10000"
-                value={quantityQuintals}
-                onChange={(e) => setQuantityQuintals(Math.max(1, Number(e.target.value)))}
-                className="w-24 px-3 py-1.5 rounded-lg bg-white border border-neutral-300 text-xs font-bold font-mono text-black text-center focus:outline-none focus:border-black"
-              />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              {/* Unit Toggle */}
+              <div className="flex items-center space-x-1 p-1 rounded-xl bg-white border border-neutral-200 text-xs">
+                {Object.entries(UNITS).map(([key, u]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setSelectedUnit(key)}
+                    className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${
+                      selectedUnit === key
+                        ? 'bg-black text-white shadow-sm'
+                        : 'text-neutral-600 hover:text-black'
+                    }`}
+                  >
+                    {u.short.replace('/', '')}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <label className="text-xs text-neutral-600 font-medium whitespace-nowrap">
+                  Quantity ({unitInfo.label.split(' ')[0]}):
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="100000"
+                  value={quantityQuintals}
+                  onChange={(e) => setQuantityQuintals(Math.max(1, Number(e.target.value)))}
+                  className="w-24 px-3 py-1.5 rounded-lg bg-white border border-neutral-300 text-xs font-bold font-mono text-black text-center focus:outline-none focus:border-black"
+                />
+              </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
             <div className="p-3 bg-white rounded-xl border border-neutral-100">
               <span className="text-[10px] text-neutral-400 uppercase font-medium">
-                Highest Mandi Rate
+                Highest Rate ({unitInfo.short.replace('/', '')})
               </span>
               <div className="text-lg font-bold font-mono text-black">
-                ₹{bestRate.toLocaleString()} /Q
+                ₹{Math.round(bestRate * unitInfo.factor).toLocaleString()} {unitInfo.short}
               </div>
+              {selectedUnit !== 'quintal' && (
+                <div className="text-[10px] text-neutral-400 font-mono mt-0.5">₹{bestRate.toLocaleString()} /Q</div>
+              )}
             </div>
 
             <div className="p-3 bg-white rounded-xl border border-neutral-100">
               <span className="text-[10px] text-neutral-400 uppercase font-medium">
-                Price Difference per Quintal
+                Price Difference ({unitInfo.short.replace('/', '')})
               </span>
               <div className="text-lg font-bold font-mono text-neutral-700">
-                +₹{spreadDifference.toLocaleString()} /Q
+                +₹{Math.round(spreadDifference * unitInfo.factor).toLocaleString()} {unitInfo.short}
               </div>
+              {selectedUnit !== 'quintal' && (
+                <div className="text-[10px] text-neutral-400 font-mono mt-0.5">+₹{spreadDifference.toLocaleString()} /Q</div>
+              )}
             </div>
 
             <div className="p-3 bg-neutral-950 text-white rounded-xl border border-black">
               <span className="text-[10px] text-neutral-400 uppercase font-medium">
-                Estimated Extra Profit on {quantityQuintals}Q
+                Estimated Extra Profit on {quantityQuintals} {unitInfo.label.split(' ')[0]}
               </span>
               <div className="text-xl font-bold font-mono text-emerald-400">
                 +₹{totalExtraProfit.toLocaleString()}
@@ -217,8 +255,13 @@ export default function CompareMandisPage({ onSelectCommodity }) {
                       Today's Rate
                     </span>
                     <span className="text-xl font-bold font-mono text-neutral-950">
-                      ₹{item.modal_price?.toLocaleString()}
+                      ₹{item.modal_price?.toLocaleString()} <span className="text-xs font-normal text-neutral-500">/Q</span>
                     </span>
+                    {selectedUnit !== 'quintal' && (
+                      <span className="text-xs font-bold font-mono text-emerald-700 block">
+                        ₹{Math.round(item.modal_price * unitInfo.factor).toLocaleString()} {unitInfo.short}
+                      </span>
+                    )}
                     <span className="text-[10px] text-neutral-400 block font-mono">
                       {diffFromBest === 0 ? 'Top Rate' : `-₹${diffFromBest} /Q`}
                     </span>
