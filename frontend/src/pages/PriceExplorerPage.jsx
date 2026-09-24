@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, RefreshCw, X, ChevronLeft, ChevronRight, Download, Printer, SlidersHorizontal, History } from 'lucide-react';
+import { Search, Filter, RefreshCw, X, ChevronLeft, ChevronRight, Download, Printer, SlidersHorizontal, History, Star } from 'lucide-react';
 import { api } from '../services/api';
 import PriceDetailModal from '../components/common/PriceDetailModal';
 import { compareWithMSP } from '../utils/mspData';
@@ -49,6 +49,29 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
         localStorage.setItem('cm_recent_searches', JSON.stringify(next));
       } catch {}
       return next;
+    });
+  };
+
+  // Favorites / Watchlist
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('cm_favorite_crops') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+
+  const toggleFavorite = (cropName, e) => {
+    if (e) e.stopPropagation();
+    if (!cropName) return;
+    setFavorites((prev) => {
+      const exists = prev.includes(cropName);
+      const updated = exists ? prev.filter((c) => c !== cropName) : [...prev, cropName];
+      try {
+        localStorage.setItem('cm_favorite_crops', JSON.stringify(updated));
+      } catch {}
+      return updated;
     });
   };
 
@@ -206,13 +229,29 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
 
       {/* 1-Tap Crop Quick Filter Chips */}
       <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs no-print">
-        <span className="text-neutral-400 font-medium whitespace-nowrap">Quick Select Crop:</span>
+        <span className="text-neutral-400 font-medium whitespace-nowrap">Quick Select:</span>
+        <button
+          onClick={() => {
+            setShowOnlyFavorites(!showOnlyFavorites);
+            setPage(1);
+          }}
+          className={`px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors flex items-center space-x-1.5 ${
+            showOnlyFavorites
+              ? 'bg-amber-500 text-white shadow-sm'
+              : 'bg-amber-50 text-amber-900 border border-amber-200/80 hover:bg-amber-100'
+          }`}
+          title="Filter only your starred watchlist crops"
+        >
+          <Star className={`w-3.5 h-3.5 ${showOnlyFavorites ? 'fill-white text-white' : 'fill-amber-400 text-amber-500'}`} />
+          <span>My Watchlist ({favorites.length})</span>
+        </button>
         {popularCrops.map((c) => {
-          const isSelected = c === 'All' ? !commodity : commodity === c;
+          const isSelected = !showOnlyFavorites && (c === 'All' ? !commodity : commodity === c);
           return (
             <button
               key={c}
               onClick={() => {
+                setShowOnlyFavorites(false);
                 setCommodity(c === 'All' ? '' : c);
                 setPage(1);
               }}
@@ -486,15 +525,54 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 text-neutral-700">
-              {prices.length > 0 ? (
-                prices.map((row) => (
+              {(() => {
+                const displayedPrices = showOnlyFavorites
+                  ? prices.filter((row) => favorites.includes(row.commodity))
+                  : prices;
+
+                if (displayedPrices.length === 0) {
+                  return (
+                    <tr>
+                      <td colSpan={8} className="py-16 text-center space-y-2">
+                        <div className="text-neutral-500 text-xs font-medium">
+                          {showOnlyFavorites
+                            ? "No crops in your Watchlist match the current view. Click the star ⭐ icon next to any crop to add it to your watchlist!"
+                            : "No mandi rates found matching your search."}
+                        </div>
+                        {(hasActiveFilters || showOnlyFavorites) && (
+                          <button
+                            onClick={() => {
+                              setShowOnlyFavorites(false);
+                              clearAllFilters();
+                            }}
+                            className="apple-btn-secondary px-4 py-1.5 rounded-full text-xs font-medium"
+                          >
+                            Reset Filters
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                }
+
+                return displayedPrices.map((row) => (
                   <tr
                     key={row.id}
                     onClick={() => setSelectedPrice(row)}
                     className="hover:bg-neutral-50/90 cursor-pointer transition-colors"
                   >
                     <td className="py-3.5 px-6 font-semibold text-neutral-950">
-                      {row.commodity}
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={(e) => toggleFavorite(row.commodity, e)}
+                          className="text-neutral-300 hover:text-amber-500 transition-colors p-0.5 no-print"
+                          title={favorites.includes(row.commodity) ? "Remove from Watchlist" : "Add to Watchlist"}
+                        >
+                          <Star className={`w-3.5 h-3.5 ${favorites.includes(row.commodity) ? 'text-amber-400 fill-amber-400' : ''}`} />
+                        </button>
+                        <span>{row.commodity}</span>
+                      </div>
                     </td>
                     <td className="py-3.5 px-6 text-neutral-500">{row.variety}</td>
                     <td className="py-3.5 px-6 font-medium text-neutral-900">{row.mandi}</td>
@@ -535,24 +613,8 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
                       {row.date}
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={8} className="py-16 text-center space-y-2">
-                    <div className="text-neutral-400 text-xs">
-                      No mandi rates found matching your search.
-                    </div>
-                    {hasActiveFilters && (
-                      <button
-                        onClick={clearAllFilters}
-                        className="apple-btn-secondary px-4 py-1.5 rounded-full text-xs font-medium"
-                      >
-                        Clear Filters
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              )}
+                ));
+              })()}
             </tbody>
           </table>
         </div>
