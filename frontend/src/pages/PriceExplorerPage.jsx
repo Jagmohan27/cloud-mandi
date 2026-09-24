@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, RefreshCw, X, ChevronLeft, ChevronRight, Download, Printer, SlidersHorizontal, History, Star } from 'lucide-react';
+import { Search, Filter, RefreshCw, X, ChevronLeft, ChevronRight, Download, Printer, SlidersHorizontal, History, Star, Mic, MicOff } from 'lucide-react';
 import { api } from '../services/api';
 import PriceDetailModal from '../components/common/PriceDetailModal';
 import { compareWithMSP } from '../utils/mspData';
@@ -73,6 +73,58 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
       } catch {}
       return updated;
     });
+  };
+
+  // Voice Search (Speech Recognition)
+  const [isListening, setIsListening] = useState(false);
+
+  const handleVoiceSearch = () => {
+    if (typeof window === 'undefined') return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Voice search is not supported in this browser. Please use Chrome on Android or desktop.');
+      return;
+    }
+
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'hi-IN';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript) {
+          const clean = transcript.replace(/[.?!]$/, '').trim();
+          setSearch(clean);
+          saveSearchTerm(clean);
+          setPage(1);
+        }
+        setIsListening(false);
+      };
+
+      recognition.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error('Speech recognition error', err);
+      setIsListening(false);
+    }
   };
 
   // Popular crop shortcuts
@@ -290,18 +342,39 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
                   saveSearchTerm(search);
                 }
               }}
-              placeholder="Type your crop name, mandi, or district (e.g. Wheat, Bisauli, Nashik)..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#F7F7F7] border border-neutral-200/80 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-black"
+              placeholder="Type or speak crop, mandi, or district (e.g. Wheat, Bisauli, Nashik)..."
+              className="w-full pl-10 pr-20 py-2.5 rounded-xl bg-[#F7F7F7] border border-neutral-200/80 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-black"
             />
-            {search && (
+            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center space-x-1">
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="p-1 text-neutral-400 hover:text-black transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
               <button
-                onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black"
+                type="button"
+                onClick={handleVoiceSearch}
+                className={`p-1.5 rounded-lg transition-all ${
+                  isListening
+                    ? 'text-red-600 bg-red-100 animate-pulse shadow-sm shadow-red-200'
+                    : 'text-neutral-500 hover:text-black hover:bg-neutral-200/60'
+                }`}
+                title={isListening ? 'Listening... Speak now' : 'Search by Voice / बोलकर खोजें'}
               >
-                <X className="w-3.5 h-3.5" />
+                {isListening ? <MicOff className="w-3.5 h-3.5 text-red-600" /> : <Mic className="w-3.5 h-3.5" />}
               </button>
-            )}
+            </div>
           </div>
+          {isListening && (
+            <div className="text-[11px] text-red-600 font-medium flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 animate-pulse">
+              <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+              <span>Listening... बोलिए (जैसे "गेहूं", "Sarson", "आजादपुर", "Nashik")</span>
+            </div>
+          )}
 
           {/* Recent Searches Chips */}
           {recentSearches.length > 0 && (
