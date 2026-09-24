@@ -1,8 +1,8 @@
 # Cloud Mandi
 
-A full-stack agricultural market price web application and REST API powered by official Government of India open data (**AGMARKNET / data.gov.in**).
+A modern full-stack agricultural market intelligence platform and REST API powered by official Government of India open data (**AGMARKNET / data.gov.in**).
 
-Designed to be simple, clean, fast, and practical for Indian farmers, traders, and agricultural cooperatives.
+Designed to be simple, fast, farmer-friendly, and production-ready for Indian farmers, traders, and agricultural cooperatives.
 
 ---
 
@@ -10,9 +10,9 @@ Designed to be simple, clean, fast, and practical for Indian farmers, traders, a
 
 - **Official Government Data Ingestion**:
   - Connects to the Ministry of Agriculture's AGMARKNET API on `data.gov.in` (`resource/9ef84268-d588-465a-a308-a864a43d0070`).
-  - Cleans dates, trims and normalizes crop/mandi names, and converts price strings to numbers.
-  - Automatically avoids duplicate entries in PostgreSQL via a unique constraint on `(commodity, mandi, variety, date)`.
-  - Runs in the background every 6 hours and logs all sync results.
+  - Automatically cleans dates, normalizes crop/mandi names, and converts prices into standardized integers.
+  - Automatically avoids duplicates in PostgreSQL via a unique constraint on `(commodity, mandi, variety, date)`.
+  - Runs in the background on APScheduler every 6 hours and logs all sync results.
 
 - **Today's Mandi Rates (दैनिक मंडी भाव)**:
   - Search and filter by Crop, State, District, Mandi, and Date.
@@ -20,9 +20,28 @@ Designed to be simple, clean, fast, and practical for Indian farmers, traders, a
   - Shows Lowest Rate (न्यूनतम), Today's Market Rate (बाजार भाव), and Highest Rate (अधिकतम).
   - 1-tap quick buttons for popular crops (*Wheat, Paddy, Onion, Potato, Tomato, Cotton, Soyabean, Mustard*).
 
+- **Personal Crop Watchlist (पसंदीदा फसलें)**:
+  - 1-click star icon (⭐) next to any crop row or detail view to pin it to your personal watchlist.
+  - Persisted in browser `localStorage` with a dedicated "⭐ My Watchlist" filter tab.
+
+- **Speech Recognition Voice Search (बोलकर खोजें)**:
+  - Integrated Web Speech API with an active microphone button.
+  - Speak crop or market names in Hindi or English (e.g., *"गेहूं"*, *"Sarson"*, *"आजादपुर"*) for hands-free search.
+
+- **Market Pulse: Top Movers vs Govt MSP (आज के बड़े उतार-चढ़ाव)**:
+  - Real-time intelligence widget highlighting which crops have the highest market premiums above MSP.
+  - Alerts farmers when market prices are trading near or below government support floors.
+
+- **Regional Harvest Unit Converter (क्विंटल, मन, बोरी, किलो)**:
+  - Toggle price units between **Quintal (100kg)**, **Maund / Man (40kg)**, **Bori / Bag (50kg)**, and **Kilogram (1kg)**.
+  - Integrated directly into the Profit Calculator and Mandi comparison cards.
+
 - **Official Minimum Support Price (MSP) Comparison (न्यूनतम समर्थन मूल्य)**:
   - Compares market prices against official Government of India benchmark MSP rates.
-  - Displays instant `+X% Above MSP` (green) or `-X% Below MSP` (amber) indicators to help farmers ensure fair pricing.
+  - Displays instant `+X% Above MSP` (green) or `-X% Below MSP` (amber) indicators.
+
+- **MSP-Aware WhatsApp & SMS Rate Cards**:
+  - 1-tap **WhatsApp** button and **Copy Text** button to generate preformatted Hindi/English rate cards for village farmer groups.
 
 - **Geolocation Nearest APMC Discovery (नजदीकी मंडी खोजें)**:
   - 1-tap "Find Mandis Near Me" button using browser geolocation and the Haversine formula.
@@ -37,9 +56,9 @@ Designed to be simple, clean, fast, and practical for Indian farmers, traders, a
   - Clean A4 printable sheet for panchayat offices, notice boards, and offline distribution.
 
 - **Compare Mandis & Profit Calculator (भाव तुलना व कमाई कैलकुलेटर)**:
-  - Select a crop and state to compare prices across nearby mandis side-by-side.
+  - Compare prices across nearby mandis side-by-side.
   - Automatically highlights the **#1 Highest Price Mandi** and shows the price difference per quintal.
-  - **Quantity Profit Calculator**: Enter harvest quantity in quintals to see total extra money earned by choosing the top market.
+  - **Quantity Profit Calculator**: Calculate total extra money earned based on your harvest volume.
 
 - **Bilingual English & Hindi Mode (हिन्दी / English)**:
   - 1-click language switcher with persistent memory across sessions.
@@ -48,30 +67,22 @@ Designed to be simple, clean, fast, and practical for Indian farmers, traders, a
 - **Dark & Light Mode Theme Switcher**:
   - Apple-style Sun/Moon theme toggle with local storage persistence and system preference detection.
 
-- **WhatsApp Share & Rate Cards**:
-  - 1-tap **Share on WhatsApp** button to send preformatted rate cards directly to village farmer groups.
-
 - **PWA Mobile App & Offline Rate Caching**:
   - Installable directly to mobile home screens like a native app.
   - Automatically caches the latest price sheet in `localStorage` for offline review when network is spotty.
 
 - **Price Trends (भाव ट्रेंड)**:
   - Interactive charts showing price movement over **7 Days**, **30 Days**, **90 Days**, and **1 Year**.
-  - Shows if rates are rising or falling.
 
 - **CSV Export**:
   - 1-click **CSV** button to save current price sheets for spreadsheet analysis.
 
-- **Admin Sync Control**:
+- **Admin Sync Control & Health Telemetry**:
   - Secure Admin section with a **`[Sync Now]`** button to trigger live data fetching from `data.gov.in`.
-  - Displays history logs of records added, updated, and rejected.
+  - `/api/health` endpoint returning database health, active price records count, and last sync timestamp.
 
 - **Automated CI/CD Pipeline**:
   - GitHub Actions workflow (`.github/workflows/ci.yml`) automatically runs pytest suite and Vite production build on every push and pull request.
-
-- **FastAPI REST API & Swagger UI**:
-  - Clean endpoints for prices, commodities, mandis, trends, and statistics.
-  - Interactive Swagger documentation at `/api/docs`.
 
 ---
 
@@ -79,7 +90,7 @@ Designed to be simple, clean, fast, and practical for Indian farmers, traders, a
 
 | Component | Technology |
 |---|---|
-| **Frontend** | React 19, Vite, Tailwind CSS v4, Recharts, Framer Motion, Lucide Icons |
+| **Frontend** | React 19, Vite, Tailwind CSS v4, Recharts, Framer Motion, Lucide Icons, Web Speech API |
 | **Backend** | Python 3.11+, FastAPI, SQLAlchemy 2.0, Pydantic v2 |
 | **Database** | PostgreSQL (with SQLite fallback) |
 | **Scheduler** | APScheduler |
