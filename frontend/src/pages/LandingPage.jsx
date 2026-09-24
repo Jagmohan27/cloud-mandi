@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, TrendingUp, Store, Award, CheckCircle2, ChevronRight, Search, ShieldCheck } from 'lucide-react';
+import { ArrowRight, TrendingUp, TrendingDown, Store, Award, CheckCircle2, ChevronRight, Search, ShieldCheck, ArrowUpRight, ArrowDownRight, Flame } from 'lucide-react';
 import { api } from '../services/api';
+import { compareWithMSP } from '../utils/mspData';
 
 export default function LandingPage({ setActiveTab, onSelectCommodity }) {
   const [stats, setStats] = useState(null);
@@ -24,6 +25,28 @@ export default function LandingPage({ setActiveTab, onSelectCommodity }) {
   }, []);
 
   const popularCrops = ['Wheat', 'Onion', 'Potato', 'Tomato', 'Cotton', 'Soyabean', 'Mustard', 'Paddy (Dhan)'];
+
+  const movers = latestPrices
+    .map((item) => {
+      const msp = compareWithMSP(item.modal_price, item.commodity);
+      return {
+        ...item,
+        mspPercent: msp ? msp.percent : 0,
+        isAboveMSP: msp ? msp.isAbove : null,
+        mspRate: msp ? msp.mspRate : null,
+      };
+    })
+    .filter((i) => i.mspRate !== null);
+
+  const gainers = [...movers]
+    .filter((m) => m.isAboveMSP)
+    .sort((a, b) => b.mspPercent - a.mspPercent)
+    .slice(0, 3);
+
+  const laggards = [...movers]
+    .filter((m) => !m.isAboveMSP)
+    .sort((a, b) => a.mspPercent - b.mspPercent)
+    .slice(0, 3);
 
   return (
     <div className="space-y-20 py-8">
@@ -221,6 +244,97 @@ export default function LandingPage({ setActiveTab, onSelectCommodity }) {
           )}
         </div>
       </section>
+
+      {/* Today's Market Movers (Top Premiums vs Govt MSP) */}
+      {movers.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center space-x-2 mb-4">
+            <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+              <Flame className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
+                Market Pulse: Rates vs Official MSP
+              </h2>
+              <p className="text-xs text-neutral-500">
+                Real-time price premiums and government support floor comparison
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Top Gainers Above MSP */}
+            <div className="apple-glass-card rounded-2xl p-5 border-emerald-200/50">
+              <div className="flex items-center space-x-2 text-emerald-800 text-xs font-semibold mb-3">
+                <ArrowUpRight className="w-4 h-4 text-emerald-600" />
+                <span>Top Premiums (MSP से अधिक भाव)</span>
+              </div>
+              <div className="space-y-2.5">
+                {gainers.length > 0 ? (
+                  gainers.map((item) => (
+                    <div
+                      key={`gainer-${item.id}`}
+                      onClick={() => {
+                        if (onSelectCommodity) onSelectCommodity(item.commodity);
+                        setActiveTab('prices');
+                      }}
+                      className="flex items-center justify-between p-3 rounded-xl bg-neutral-50/70 hover:bg-emerald-50/50 transition-colors cursor-pointer border border-neutral-100"
+                    >
+                      <div>
+                        <div className="text-xs font-semibold text-neutral-900">{item.commodity}</div>
+                        <div className="text-[11px] text-neutral-500">{item.mandi} Mandi, {item.state}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-bold font-mono text-neutral-900">₹{item.modal_price?.toLocaleString()}/Q</div>
+                        <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                          +{item.mspPercent}% vs MSP
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-xs text-neutral-400 py-3 text-center">Trading around official benchmark rates</div>
+                )}
+              </div>
+            </div>
+
+            {/* Trading Near / Below MSP */}
+            <div className="apple-glass-card rounded-2xl p-5 border-amber-200/50">
+              <div className="flex items-center space-x-2 text-amber-800 text-xs font-semibold mb-3">
+                <ArrowDownRight className="w-4 h-4 text-amber-600" />
+                <span>Value & Below MSP (समर्थन मूल्य के करीब/नीचे)</span>
+              </div>
+              <div className="space-y-2.5">
+                {laggards.length > 0 ? (
+                  laggards.map((item) => (
+                    <div
+                      key={`laggard-${item.id}`}
+                      onClick={() => {
+                        if (onSelectCommodity) onSelectCommodity(item.commodity);
+                        setActiveTab('prices');
+                      }}
+                      className="flex items-center justify-between p-3 rounded-xl bg-neutral-50/70 hover:bg-amber-50/50 transition-colors cursor-pointer border border-neutral-100"
+                    >
+                      <div>
+                        <div className="text-xs font-semibold text-neutral-900">{item.commodity}</div>
+                        <div className="text-[11px] text-neutral-500">{item.mandi} Mandi, {item.state}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-bold font-mono text-neutral-900">₹{item.modal_price?.toLocaleString()}/Q</div>
+                        <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                          {item.mspPercent}% vs MSP
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-xs text-neutral-500 py-4 text-center">All major mandi arrivals are currently selling safely above government MSP floor prices!</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Latest Mandi Rates Table */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
