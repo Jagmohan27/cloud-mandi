@@ -1,13 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck, Share2, Award } from 'lucide-react';
+import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck, Share2, Award, Copy, Check } from 'lucide-react';
 import { api } from '../../services/api';
-import { shareRate } from '../../utils/share';
+import { shareRate, copyRateMessage } from '../../utils/share';
 import { compareWithMSP } from '../../utils/mspData';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
 export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
   const [history, setHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await copyRateMessage(price);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch (err) {
+      console.error('Failed to copy', err);
+    }
+  };
 
   useEffect(() => {
     if (!price?.commodity) return;
@@ -209,11 +220,19 @@ export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
           </div>
           <div className="flex items-center space-x-2">
             <button
+              onClick={handleCopy}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-700 bg-white hover:bg-neutral-100 border border-neutral-200 transition-colors flex items-center space-x-1.5"
+              title="Copy formatted rate message to clipboard"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-neutral-500" />}
+              <span>{copied ? 'Copied!' : 'Copy Text'}</span>
+            </button>
+            <button
               onClick={() => shareRate(price)}
               className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors flex items-center space-x-1.5"
             >
               <Share2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Share on WhatsApp</span>
+              <span>WhatsApp</span>
             </button>
             <button
               onClick={() => {
