@@ -4,6 +4,7 @@ import { api } from '../../services/api';
 import { shareRate, copyRateMessage } from '../../utils/share';
 import { compareWithMSP } from '../../utils/mspData';
 import { getHindiCropName } from '../../utils/cropSynonyms';
+import { getMandiWeatherAdvisory } from '../../utils/mandiWeather';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
 export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
@@ -274,6 +275,40 @@ export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
                 </div>
               </div>
             )}
+
+            {/* Mandi Yard Weather & Rain Safety Advisory */}
+            {(() => {
+              const weather = getMandiWeatherAdvisory(price.state, price.district);
+              return (
+                <div
+                  className={`p-3.5 rounded-2xl border flex items-center justify-between text-xs transition-colors ${
+                    weather.isSafeOpenYard
+                      ? 'bg-sky-50/70 border-sky-200/80 text-sky-950'
+                      : 'bg-amber-50/70 border-amber-200/80 text-amber-950'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-base flex-shrink-0 ${
+                        weather.isSafeOpenYard
+                          ? 'bg-sky-600 text-white shadow-sm'
+                          : 'bg-amber-600 text-white shadow-sm'
+                      }`}
+                    >
+                      {weather.isSafeOpenYard ? '☀️' : '🌧️'}
+                    </div>
+                    <div>
+                      <div className="font-semibold flex items-center space-x-2">
+                        <span>मंडी मौसम सुरक्षा (Yard Weather Advisory): {weather.title}</span>
+                      </div>
+                      <p className="text-[11px] text-neutral-600 mt-0.5">
+                        {weather.advice} • <strong>{weather.yardCondition}</strong>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* 30-Day Trendline */}
             <div>

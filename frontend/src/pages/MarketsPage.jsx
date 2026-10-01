@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Store, MapPin, Search, ChevronRight, Compass, Navigation } from 'lucide-react';
 import { api } from '../services/api';
 import { calculateDistanceKm, getMandiCoordinates } from '../utils/geoData';
+import { getMandiWeatherAdvisory } from '../utils/mandiWeather';
 
 export default function MarketsPage({ onSelectMandi }) {
   const [mandis, setMandis] = useState([]);
@@ -194,6 +195,21 @@ export default function MarketsPage({ onSelectMandi }) {
                         📍 ~{m.distance} km
                       </span>
                     )}
+                    {(() => {
+                      const weather = getMandiWeatherAdvisory(m.state, m.district);
+                      return (
+                        <span
+                          className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                            weather.isSafeOpenYard
+                              ? 'bg-sky-50 text-sky-700 border-sky-200/60'
+                              : 'bg-amber-50 text-amber-700 border-amber-200/60'
+                          }`}
+                          title={weather.advice}
+                        >
+                          {weather.isSafeOpenYard ? '☀️ खुला प्रांगण' : '🌧️ तिरपाल रखें'}
+                        </span>
+                      );
+                    })()}
                     <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">
                       APMC Yard
                     </span>
