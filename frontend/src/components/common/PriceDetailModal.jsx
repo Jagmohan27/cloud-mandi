@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck, Share2, Award, Copy, Check } from 'lucide-react';
+import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck, Share2, Award, Copy, Check, Navigation } from 'lucide-react';
 import { api } from '../../services/api';
 import { shareRate, copyRateMessage } from '../../utils/share';
 import { compareWithMSP } from '../../utils/mspData';
@@ -64,9 +64,21 @@ export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
             <h2 className="text-2xl font-semibold text-neutral-900 tracking-tight">
               {price.mandi} Mandi (मंडी)
             </h2>
-            <div className="flex items-center space-x-1.5 text-xs text-neutral-500 mt-1">
-              <MapPin className="w-3.5 h-3.5 text-neutral-400" />
-              <span>{price.district}, {price.state}</span>
+            <div className="flex items-center flex-wrap gap-2 text-xs text-neutral-500 mt-1">
+              <div className="flex items-center space-x-1.5">
+                <MapPin className="w-3.5 h-3.5 text-neutral-400" />
+                <span>{price.district}, {price.state}</span>
+              </div>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${price.mandi} Mandi, ${price.district}, ${price.state}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-1 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors"
+                title="Open in Google Maps for driving directions"
+              >
+                <Navigation className="w-3 h-3" />
+                <span>रास्ता देखें (Directions)</span>
+              </a>
             </div>
           </div>
           <button

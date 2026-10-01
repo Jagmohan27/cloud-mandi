@@ -209,8 +209,21 @@ export default function MarketsPage({ onSelectMandi }) {
               </div>
 
               <div className="mt-6 pt-3 border-t border-neutral-100 flex items-center justify-between text-xs text-neutral-500">
-                <span className="text-[11px] font-mono">View Market Prices</span>
-                <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:translate-x-1 transition-transform" />
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${m.name} Mandi, ${m.district}, ${m.state}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-200 border border-neutral-200/80 text-[11px] font-medium text-neutral-700 transition-colors flex items-center space-x-1"
+                  title="Open Google Maps Directions"
+                >
+                  <Navigation className="w-3 h-3 text-emerald-600" />
+                  <span>रास्ता देखें (Maps)</span>
+                </a>
+                <div className="flex items-center space-x-1 group-hover:text-black">
+                  <span className="text-[11px] font-medium">भाव देखें</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-neutral-400 group-hover:translate-x-0.5 transition-transform" />
+                </div>
               </div>
             </div>
           ))
