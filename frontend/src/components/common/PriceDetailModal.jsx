@@ -3,6 +3,7 @@ import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck, Share2, 
 import { api } from '../../services/api';
 import { shareRate, copyRateMessage } from '../../utils/share';
 import { compareWithMSP } from '../../utils/mspData';
+import { getHindiCropName } from '../../utils/cropSynonyms';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
 export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
@@ -54,7 +55,9 @@ export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
           <div>
             <div className="flex items-center space-x-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">
               <Tag className="w-3.5 h-3.5" />
-              <span>{price.commodity}</span>
+              <span>
+                {price.commodity} {getHindiCropName(price.commodity) ? `(${getHindiCropName(price.commodity)})` : ''}
+              </span>
               <span>•</span>
               <span>Variety: {price.variety}</span>
             </div>

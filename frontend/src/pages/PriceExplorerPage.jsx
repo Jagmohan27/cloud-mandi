@@ -3,6 +3,7 @@ import { Search, Filter, RefreshCw, X, ChevronLeft, ChevronRight, Download, Prin
 import { api } from '../services/api';
 import PriceDetailModal from '../components/common/PriceDetailModal';
 import { compareWithMSP } from '../utils/mspData';
+import { resolveCropSynonym, getHindiCropName } from '../utils/cropSynonyms';
 
 export default function PriceExplorerPage({ initialCommodity = '', onExploreTrends }) {
   const [prices, setPrices] = useState([]);
@@ -105,8 +106,9 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
         const transcript = event.results[0][0].transcript;
         if (transcript) {
           const clean = transcript.replace(/[.?!]$/, '').trim();
-          setSearch(clean);
-          saveSearchTerm(clean);
+          const resolved = resolveCropSynonym(clean);
+          setSearch(resolved);
+          saveSearchTerm(resolved);
           setPage(1);
         }
         setIsListening(false);
@@ -164,8 +166,9 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
   const fetchPrices = useCallback(async () => {
     setLoading(true);
     try {
+      const effectiveSearch = resolveCropSynonym(search) || undefined;
       const res = await api.getPrices({
-        search: search || undefined,
+        search: effectiveSearch,
         commodity: commodity || undefined,
         state: state || undefined,
         district: district || undefined,
@@ -373,6 +376,12 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
             <div className="text-[11px] text-red-600 font-medium flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 animate-pulse">
               <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
               <span>Listening... बोलिए (जैसे "गेहूं", "Sarson", "आजादपुर", "Nashik")</span>
+            </div>
+          )}
+          {search && resolveCropSynonym(search).toLowerCase() !== search.trim().toLowerCase() && (
+            <div className="text-[11px] text-emerald-800 bg-emerald-50/80 border border-emerald-200/80 px-2.5 py-1 rounded-lg flex items-center space-x-1.5 inline-flex">
+              <span>🌾 क्षेत्रीय नाम पहचाना (Regional Crop Detected):</span>
+              <strong className="font-semibold text-emerald-950">{resolveCropSynonym(search)}</strong>
             </div>
           )}
 
@@ -644,7 +653,14 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
                         >
                           <Star className={`w-3.5 h-3.5 ${favorites.includes(row.commodity) ? 'text-amber-400 fill-amber-400' : ''}`} />
                         </button>
-                        <span>{row.commodity}</span>
+                        <div>
+                          <span>{row.commodity}</span>
+                          {getHindiCropName(row.commodity) && (
+                            <span className="ml-1.5 text-[10px] font-normal text-neutral-600 bg-neutral-100 px-1.5 py-0.5 rounded border border-neutral-200/60">
+                              {getHindiCropName(row.commodity)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="py-3.5 px-6 text-neutral-500">{row.variety}</td>
