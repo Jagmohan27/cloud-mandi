@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck, Share2, Award, Copy, Check, Navigation } from 'lucide-react';
+import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck, Share2, Award, Copy, Check, Navigation, FileText, Printer } from 'lucide-react';
 import { api } from '../../services/api';
 import { shareRate, copyRateMessage } from '../../utils/share';
 import { compareWithMSP } from '../../utils/mspData';
@@ -10,6 +10,10 @@ export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
   const [history, setHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showParchi, setShowParchi] = useState(false);
+  const [farmerName, setFarmerName] = useState('किसान भाई / Farmer');
+  const [parchiWeight, setParchiWeight] = useState(25);
+  const [slipNumber] = useState(() => 'MP-' + Math.floor(100000 + Math.random() * 900000));
 
   const handleCopy = async () => {
     try {
@@ -90,148 +94,265 @@ export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-6">
-          {/* Rate Trio */}
-          <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-[#F7F7F7] border border-neutral-200/80 text-center">
-            <div>
-              <div className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
-                Lowest Rate (न्यूनतम)
+        {showParchi ? (
+          <div className="p-6 space-y-4">
+            {/* Parchi Controls */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-xs no-print">
+              <div className="flex items-center space-x-2">
+                <label className="font-semibold text-neutral-700">किसान (Farmer):</label>
+                <input
+                  type="text"
+                  value={farmerName}
+                  onChange={(e) => setFarmerName(e.target.value)}
+                  className="px-2 py-1 rounded border border-neutral-300 bg-white text-xs font-medium text-neutral-900 focus:outline-none focus:border-black"
+                  placeholder="Farmer Name"
+                />
               </div>
-              <div className="text-lg font-semibold text-neutral-800 mt-0.5 font-mono">
-                ₹{price.minimum_price?.toLocaleString()}
-              </div>
-              <div className="text-[10px] text-neutral-400">प्रति क्विंटल</div>
-            </div>
-            <div className="border-x border-neutral-200">
-              <div className="text-[11px] font-semibold text-neutral-950 uppercase tracking-wider">
-                Today's Rate (बाजार भाव)
-              </div>
-              <div className="text-2xl font-bold text-black mt-0.5 font-mono">
-                ₹{price.modal_price?.toLocaleString()}
-              </div>
-              <div className="text-[10px] text-neutral-600 font-medium">प्रति 100 kg</div>
-            </div>
-            <div>
-              <div className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
-                Highest Rate (अधिकतम)
-              </div>
-              <div className="text-lg font-semibold text-neutral-800 mt-0.5 font-mono">
-                ₹{price.maximum_price?.toLocaleString()}
-              </div>
-              <div className="text-[10px] text-neutral-400">प्रति क्विंटल</div>
-            </div>
-          </div>
-
-          {/* MSP Benchmark Comparison */}
-          {mspComp && (
-            <div
-              className={`p-3.5 rounded-2xl border flex items-center justify-between text-xs transition-colors ${
-                mspComp.isAbove
-                  ? 'bg-emerald-50/70 border-emerald-200/80 text-emerald-950'
-                  : 'bg-amber-50/70 border-amber-200/80 text-amber-950'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-[11px] flex-shrink-0 ${
-                    mspComp.isAbove
-                      ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
-                      : 'bg-amber-600 text-white shadow-sm shadow-amber-600/20'
-                  }`}
+              <div className="flex items-center space-x-2">
+                <label className="font-semibold text-neutral-700">वजन (Quintal):</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10000"
+                  value={parchiWeight}
+                  onChange={(e) => setParchiWeight(Math.max(1, Number(e.target.value)))}
+                  className="w-16 px-2 py-1 rounded border border-neutral-300 bg-white text-xs text-center font-bold font-mono focus:outline-none focus:border-black"
+                />
+                <button
+                  onClick={() => window.print()}
+                  className="px-3 py-1 bg-black text-white rounded-lg font-medium flex items-center space-x-1 hover:bg-neutral-800 transition-colors shadow-sm ml-2"
                 >
-                  MSP
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>प्रिंट (Print)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Authentic Mandi Parchi Slip */}
+            <div className="border-2 border-neutral-900 rounded-2xl p-5 bg-[#FCFBF7] text-neutral-900 space-y-4 shadow-sm print:border-black print:m-0 print:p-4">
+              {/* Parchi Header */}
+              <div className="text-center pb-3 border-b-2 border-dashed border-neutral-400">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-600">
+                  कृषि उपज मंडी समिति (APMC Market Committee)
+                </div>
+                <h3 className="text-lg font-black tracking-tight text-neutral-950 mt-0.5">
+                  {price.mandi} मंडी, {price.district} ({price.state})
+                </h3>
+                <p className="text-[11px] text-neutral-600">
+                  दैनिक आवक व आधिकारिक दर पर्ची (Daily Mandi Rate Slip)
+                </p>
+                <div className="flex justify-between items-center text-[11px] font-mono text-neutral-600 mt-2 pt-2 border-t border-neutral-200">
+                  <span>पर्ची सं.: <strong>{slipNumber}</strong></span>
+                  <span>दिनांक: <strong>{price.date}</strong></span>
+                </div>
+              </div>
+
+              {/* Lot Particulars Table */}
+              <table className="w-full text-xs text-left">
+                <tbody className="divide-y divide-neutral-200">
+                  <tr>
+                    <td className="py-2 text-neutral-600 font-medium">किसान / विक्रेता:</td>
+                    <td className="py-2 font-bold text-neutral-900 text-right">{farmerName}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-neutral-600 font-medium">फसल का नाम (Crop):</td>
+                    <td className="py-2 font-bold text-neutral-900 text-right">
+                      {price.commodity} {getHindiCropName(price.commodity) ? `(${getHindiCropName(price.commodity)})` : ''}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-neutral-600 font-medium">किस्म / ग्रेड (Variety/Grade):</td>
+                    <td className="py-2 text-neutral-800 text-right">{price.variety} / {price.grade || 'FAQ'}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-neutral-600 font-medium">तय दर (Agreed Rate):</td>
+                    <td className="py-2 font-mono font-bold text-neutral-900 text-right">
+                      ₹{price.modal_price?.toLocaleString('en-IN')} / क्विंटल
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-neutral-600 font-medium">कुल तौल (Total Weight):</td>
+                    <td className="py-2 font-mono font-bold text-neutral-900 text-right">
+                      {parchiWeight} क्विंटल ({(parchiWeight * 100).toLocaleString('en-IN')} kg)
+                    </td>
+                  </tr>
+                  <tr className="bg-neutral-100/90 font-bold">
+                    <td className="py-2 px-2 text-neutral-950 font-bold">कुल देय राशि (Gross Amount):</td>
+                    <td className="py-2 px-2 text-right font-mono text-emerald-950 text-base">
+                      ₹{Math.round(price.modal_price * parchiWeight).toLocaleString('en-IN')}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Signature Lines */}
+              <div className="pt-4 grid grid-cols-2 gap-4 text-center text-[10px] text-neutral-600 border-t border-dashed border-neutral-300">
+                <div>
+                  <div className="h-8 border-b border-neutral-400"></div>
+                  <span className="mt-1 block font-medium">किसान के हस्ताक्षर (Farmer)</span>
                 </div>
                 <div>
-                  <div className="font-semibold flex items-center space-x-2">
-                    <span>Govt MSP Benchmark: ₹{mspComp.mspRate.toLocaleString('en-IN')}/Q</span>
-                    <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
-                        mspComp.isAbove
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}
-                    >
-                      {mspComp.isAbove
-                        ? `+${mspComp.percent}% Above MSP`
-                        : `${mspComp.percent}% Below MSP`}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-neutral-600 mt-0.5">
-                    {mspComp.isAbove
-                      ? `Mandi rate is ₹${mspComp.diff.toLocaleString('en-IN')}/Q higher than GOI minimum support price.`
-                      : `Mandi rate is ₹${Math.abs(mspComp.diff).toLocaleString('en-IN')}/Q below GOI minimum support price.`}
-                  </p>
+                  <div className="h-8 border-b border-neutral-400"></div>
+                  <span className="mt-1 block font-medium">तौल लिपिक / व्यापारी (Clerk)</span>
                 </div>
               </div>
             </div>
-          )}
-
-          {/* 30-Day Trendline */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-neutral-900 uppercase tracking-wider flex items-center space-x-1.5">
-                <TrendingUp className="w-3.5 h-3.5" />
-                <span>30-Day Price Movement in this Mandi</span>
-              </span>
+          </div>
+        ) : (
+          <div className="p-6 space-y-6">
+            {/* Rate Trio */}
+            <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-[#F7F7F7] border border-neutral-200/80 text-center">
+              <div>
+                <div className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
+                  Lowest Rate (न्यूनतम)
+                </div>
+                <div className="text-lg font-semibold text-neutral-800 mt-0.5 font-mono">
+                  ₹{price.minimum_price?.toLocaleString()}
+                </div>
+                <div className="text-[10px] text-neutral-400">प्रति क्विंटल</div>
+              </div>
+              <div className="border-x border-neutral-200">
+                <div className="text-[11px] font-semibold text-neutral-950 uppercase tracking-wider">
+                  Today's Rate (बाजार भाव)
+                </div>
+                <div className="text-2xl font-bold text-black mt-0.5 font-mono">
+                  ₹{price.modal_price?.toLocaleString()}
+                </div>
+                <div className="text-[10px] text-neutral-600 font-medium">प्रति 100 kg</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
+                  Highest Rate (अधिकतम)
+                </div>
+                <div className="text-lg font-semibold text-neutral-800 mt-0.5 font-mono">
+                  ₹{price.maximum_price?.toLocaleString()}
+                </div>
+                <div className="text-[10px] text-neutral-400">प्रति क्विंटल</div>
+              </div>
             </div>
-            <div className="h-36 w-full rounded-2xl bg-[#FAFAFA] border border-neutral-100 p-2 flex items-center justify-center">
-              {loadingHistory ? (
-                <div className="text-xs text-neutral-400">Loading trend...</div>
-              ) : history.length > 1 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={history} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="modalGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#000000" stopOpacity={0.15} />
-                        <stop offset="95%" stopColor="#000000" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="date" hide />
-                    <YAxis domain={['dataMin - 50', 'dataMax + 50']} hide />
-                    <Tooltip
-                      formatter={(val) => [`₹${val} /Q`, "Today's Rate"]}
-                      labelFormatter={(label) => `Date: ${label}`}
-                      contentStyle={{
-                        backgroundColor: '#000',
-                        borderRadius: '8px',
-                        color: '#fff',
-                        fontSize: '11px',
-                        border: 'none',
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="modal_price"
-                      stroke="#000000"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#modalGradient)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="text-xs text-neutral-400">No previous records for this mandi</div>
-              )}
+
+            {/* MSP Benchmark Comparison */}
+            {mspComp && (
+              <div
+                className={`p-3.5 rounded-2xl border flex items-center justify-between text-xs transition-colors ${
+                  mspComp.isAbove
+                    ? 'bg-emerald-50/70 border-emerald-200/80 text-emerald-950'
+                    : 'bg-amber-50/70 border-amber-200/80 text-amber-950'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-[11px] flex-shrink-0 ${
+                      mspComp.isAbove
+                        ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
+                        : 'bg-amber-600 text-white shadow-sm shadow-amber-600/20'
+                    }`}
+                  >
+                    MSP
+                  </div>
+                  <div>
+                    <div className="font-semibold flex items-center space-x-2">
+                      <span>Govt MSP Benchmark: ₹{mspComp.mspRate.toLocaleString('en-IN')}/Q</span>
+                      <span
+                        className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                          mspComp.isAbove
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-amber-100 text-amber-800'
+                        }`}
+                      >
+                        {mspComp.isAbove
+                          ? `+${mspComp.percent}% Above MSP`
+                          : `${mspComp.percent}% Below MSP`}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-neutral-600 mt-0.5">
+                      {mspComp.isAbove
+                        ? `Mandi rate is ₹${mspComp.diff.toLocaleString('en-IN')}/Q higher than GOI minimum support price.`
+                        : `Mandi rate is ₹${Math.abs(mspComp.diff).toLocaleString('en-IN')}/Q below GOI minimum support price.`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 30-Day Trendline */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-neutral-900 uppercase tracking-wider flex items-center space-x-1.5">
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span>30-Day Price Movement in this Mandi</span>
+                </span>
+              </div>
+              <div className="h-36 w-full rounded-2xl bg-[#FAFAFA] border border-neutral-100 p-2 flex items-center justify-center">
+                {loadingHistory ? (
+                  <div className="text-xs text-neutral-400">Loading trend...</div>
+                ) : history.length > 1 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={history} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="modalGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#000000" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#000000" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="date" hide />
+                      <YAxis domain={['dataMin - 50', 'dataMax + 50']} hide />
+                      <Tooltip
+                        formatter={(val) => [`₹${val} /Q`, "Today's Rate"]}
+                        labelFormatter={(label) => `Date: ${label}`}
+                        contentStyle={{
+                          backgroundColor: '#000',
+                          borderRadius: '8px',
+                          color: '#fff',
+                          fontSize: '11px',
+                          border: 'none',
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="modal_price"
+                        stroke="#000000"
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#modalGradient)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="text-xs text-neutral-400">No previous records for this mandi</div>
+                )}
+              </div>
+            </div>
+
+            {/* Details Meta */}
+            <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="flex items-center space-x-2 text-neutral-600">
+                <Calendar className="w-4 h-4 text-neutral-400" />
+                <span>Report Date: <strong className="text-neutral-900 font-mono">{price.date}</strong></span>
+              </div>
+              <div className="flex items-center space-x-2 text-neutral-600">
+                <ShieldCheck className="w-4 h-4 text-neutral-400" />
+                <span>Grade: <strong className="text-neutral-900">{price.grade || 'Standard / FAQ'}</strong></span>
+              </div>
             </div>
           </div>
-
-          {/* Details Meta */}
-          <div className="grid grid-cols-2 gap-4 text-xs">
-            <div className="flex items-center space-x-2 text-neutral-600">
-              <Calendar className="w-4 h-4 text-neutral-400" />
-              <span>Report Date: <strong className="text-neutral-900 font-mono">{price.date}</strong></span>
-            </div>
-            <div className="flex items-center space-x-2 text-neutral-600">
-              <ShieldCheck className="w-4 h-4 text-neutral-400" />
-              <span>Grade: <strong className="text-neutral-900">{price.grade || 'Standard / FAQ'}</strong></span>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Footer */}
-        <div className="p-4 bg-[#F7F7F7] border-t border-neutral-100 flex items-center justify-between">
-          <div className="text-[11px] text-neutral-500">
-            Source: Official APMC Market Record
+        <div className="p-4 bg-[#F7F7F7] border-t border-neutral-100 flex items-center justify-between no-print">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setShowParchi(!showParchi)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center space-x-1.5 ${
+                showParchi
+                  ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
+                  : 'bg-white hover:bg-neutral-100 border-neutral-200 text-neutral-800'
+              }`}
+              title="Toggle printable Mandi Parchi slip"
+            >
+              <FileText className={`w-3.5 h-3.5 ${showParchi ? 'text-white' : 'text-amber-600'}`} />
+              <span>{showParchi ? 'विवरण (Details)' : 'मंडी पर्ची (Slip)'}</span>
+            </button>
           </div>
           <div className="flex items-center space-x-2">
             <button
