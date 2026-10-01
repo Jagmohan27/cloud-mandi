@@ -132,6 +132,19 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
   // Popular crop shortcuts
   const popularCrops = ['All', 'Wheat', 'Onion', 'Potato', 'Tomato', 'Cotton', 'Soyabean', 'Mustard', 'Paddy (Dhan)'];
 
+  // Top agricultural farming states shortcuts
+  const topAgriStates = [
+    { label: 'All India (सभी राज्य)', value: '' },
+    { label: 'पंजाब (Punjab)', value: 'Punjab' },
+    { label: 'हरियाणा (Haryana)', value: 'Haryana' },
+    { label: 'उत्तर प्रदेश (UP)', value: 'Uttar Pradesh' },
+    { label: 'मध्य प्रदेश (MP)', value: 'Madhya Pradesh' },
+    { label: 'राजस्थान (Rajasthan)', value: 'Rajasthan' },
+    { label: 'महाराष्ट्र (Maharashtra)', value: 'Maharashtra' },
+    { label: 'गुजरात (Gujarat)', value: 'Gujarat' },
+    { label: 'बिहार (Bihar)', value: 'Bihar' },
+  ];
+
   useEffect(() => {
     const loadMetadata = async () => {
       try {
@@ -317,6 +330,32 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
               }`}
             >
               {c}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 1-Tap State Quick Filter Chips */}
+      <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs no-print">
+        <span className="text-neutral-400 font-medium whitespace-nowrap">राज्य (State):</span>
+        {topAgriStates.map((st) => {
+          const isSelected = (!state && !st.value) || state === st.value;
+          return (
+            <button
+              key={st.value}
+              onClick={() => {
+                setState(st.value);
+                setDistrict('');
+                setMandi('');
+                setPage(1);
+              }}
+              className={`px-2.5 py-1 rounded-full font-medium whitespace-nowrap text-[11px] transition-colors ${
+                isSelected
+                  ? 'bg-neutral-900 text-white shadow-sm'
+                  : 'bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-100'
+              }`}
+            >
+              {st.label}
             </button>
           );
         })}

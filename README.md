@@ -24,6 +24,29 @@ Designed to be simple, fast, farmer-friendly, and production-ready for Indian fa
   - 1-click star icon (⭐) next to any crop row or detail view to pin it to your personal watchlist.
   - Persisted in browser `localStorage` with a dedicated "⭐ My Watchlist" filter tab.
 
+- **Multilingual Regional Crop Synonyms & Devanagari Search (क्षेत्रीय फसल नाम शब्दकोश)**:
+  - Full phonetic Hindi, regional dialect, and Hinglish dictionary resolving terms like *गेहूं, gehu, धान, chawal, सरसों, sarson, आलू, pyaz, कपास, makka, bajra* directly to standard AGMARKNET canonical commodities.
+  - Automatically recognizes voice and text queries in local languages and displays bilingual crop badges (*Wheat / गेहूं*).
+
+- **1-Tap Google Maps Mandi Navigation (मंडी का रास्ता देखें)**:
+  - Direct 1-tap driving directions to APMC market yards on both Mandi cards and rate detail modals.
+  - Helps farmers quickly navigate tractor and freight routes from rural areas.
+
+- **Harvest Transport Freight & Net Profit Calculator (ढुलाई खर्च व शुद्ध बचत)**:
+  - Interactive freight deduction tool (₹/quintal) in the Side-by-Side Mandi Comparison.
+  - Calculates true in-hand savings after deducting tractor/pickup hauling expenses to confirm if a longer trip to a higher-paying mandi is genuinely profitable.
+
+- **Printable Mandi Parchi / Rate Slip Generator (मंडी पर्ची / रसीद प्रिंट)**:
+  - Generate an authentic APMC Mandi Parchi / Weighment Slip directly from any rate record.
+  - Features customizable farmer name, lot weight (quintals), agreed rate, total gross payout, slip number, and signature blocks.
+  - Fully formatted for A4 thermal/standard printer outputs using `@media print`.
+
+- **Mandi Yard Weather & Rain Safety Advisory (मंडी मौसम व बारिश चेतावनी)**:
+  - Seasonal agro-climatic advisory alerting farmers to open auction conditions, monsoon rain risks, and tarpaulin (तिरपाल) precautions before setting off to market yards.
+
+- **Top Agricultural States Quick Picker (प्रमुख कृषि राज्य)**:
+  - 1-tap quick filter chips for major agricultural states (*Punjab, Haryana, Uttar Pradesh, Madhya Pradesh, Rajasthan, Maharashtra, Gujarat, Bihar*).
+
 - **Speech Recognition Voice Search (बोलकर खोजें)**:
   - Integrated Web Speech API with an active microphone button.
   - Speak crop or market names in Hindi or English (e.g., *"गेहूं"*, *"Sarson"*, *"आजादपुर"*) for hands-free search.

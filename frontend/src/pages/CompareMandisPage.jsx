@@ -103,6 +103,23 @@ export default function CompareMandisPage({ onSelectCommodity }) {
               </option>
             ))}
           </select>
+          {/* Quick State Chips */}
+          <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 mt-2 text-xs">
+            {['Punjab', 'Haryana', 'Uttar Pradesh', 'Madhya Pradesh', 'Rajasthan', 'Maharashtra', 'Gujarat'].map((st) => (
+              <button
+                key={st}
+                type="button"
+                onClick={() => setSelectedState(selectedState === st ? '' : st)}
+                className={`px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-colors ${
+                  selectedState === st
+                    ? 'bg-black text-white'
+                    : 'bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100'
+                }`}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
