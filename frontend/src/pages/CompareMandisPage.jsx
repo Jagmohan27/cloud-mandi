@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpDown, Award, MapPin, Calculator, ChevronRight, TrendingUp, Scale } from 'lucide-react';
+import { ArrowUpDown, Award, MapPin, Calculator, ChevronRight, TrendingUp, Scale, Truck } from 'lucide-react';
 import { api } from '../services/api';
 
 const UNITS = {
@@ -20,6 +20,8 @@ export default function CompareMandisPage({ onSelectCommodity }) {
   // Profit Calculator & Unit state
   const [quantityQuintals, setQuantityQuintals] = useState(50);
   const [selectedUnit, setSelectedUnit] = useState('quintal');
+  const [includeTransport, setIncludeTransport] = useState(false);
+  const [transportRatePerQ, setTransportRatePerQ] = useState(30);
 
   useEffect(() => {
     api.getCommodities().then(setCommodities).catch(() => []);
@@ -47,7 +49,9 @@ export default function CompareMandisPage({ onSelectCommodity }) {
 
   // Profit calculation based on harvest quantity in the selected unit
   const totalQuintals = (Number(quantityQuintals) || 0) * unitInfo.factor;
-  const totalExtraProfit = Math.round(spreadDifference * totalQuintals);
+  const grossExtraProfit = Math.round(spreadDifference * totalQuintals);
+  const totalTransportCost = includeTransport ? Math.round((Number(transportRatePerQ) || 0) * totalQuintals) : 0;
+  const netExtraProfit = Math.round(grossExtraProfit - totalTransportCost);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -155,7 +159,58 @@ export default function CompareMandisPage({ onSelectCommodity }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+          {/* Transport Expense Deduction Controls */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white border border-neutral-200/80 text-xs">
+            <div className="flex items-center space-x-2.5">
+              <input
+                id="transport-toggle"
+                type="checkbox"
+                checked={includeTransport}
+                onChange={(e) => setIncludeTransport(e.target.checked)}
+                className="w-4 h-4 rounded text-black border-neutral-300 focus:ring-black cursor-pointer"
+              />
+              <label htmlFor="transport-toggle" className="font-semibold text-neutral-800 cursor-pointer flex items-center space-x-1.5">
+                <Truck className="w-4 h-4 text-neutral-700" />
+                <span>Deduct Transport / ढुलाई खर्च घटाएं</span>
+              </label>
+            </div>
+
+            {includeTransport && (
+              <div className="flex items-center space-x-2.5 flex-wrap gap-y-1">
+                <span className="text-[11px] text-neutral-500">Freight (भाड़ा):</span>
+                <div className="flex items-center space-x-1">
+                  {[20, 30, 50, 75].map((rate) => (
+                    <button
+                      key={rate}
+                      type="button"
+                      onClick={() => setTransportRatePerQ(rate)}
+                      className={`px-2 py-0.5 rounded text-[11px] font-mono font-medium transition-colors ${
+                        transportRatePerQ === rate
+                          ? 'bg-black text-white'
+                          : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                      }`}
+                    >
+                      ₹{rate}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center space-x-1 font-mono text-xs">
+                  <span>₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="1000"
+                    value={transportRatePerQ}
+                    onChange={(e) => setTransportRatePerQ(Math.max(0, Number(e.target.value)))}
+                    className="w-16 px-1.5 py-0.5 rounded border border-neutral-300 text-xs text-center font-bold font-mono focus:outline-none focus:border-black"
+                  />
+                  <span className="text-neutral-500 text-[11px]">/Q</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className={`grid grid-cols-1 ${includeTransport ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-4 text-center`}>
             <div className="p-3 bg-white rounded-xl border border-neutral-100">
               <span className="text-[10px] text-neutral-400 uppercase font-medium">
                 Highest Rate ({unitInfo.short.replace('/', '')})
@@ -170,23 +225,42 @@ export default function CompareMandisPage({ onSelectCommodity }) {
 
             <div className="p-3 bg-white rounded-xl border border-neutral-100">
               <span className="text-[10px] text-neutral-400 uppercase font-medium">
-                Price Difference ({unitInfo.short.replace('/', '')})
+                Gross Gain ({quantityQuintals} {unitInfo.label.split(' ')[0]})
               </span>
               <div className="text-lg font-bold font-mono text-neutral-700">
-                +₹{Math.round(spreadDifference * unitInfo.factor).toLocaleString()} {unitInfo.short}
+                +₹{grossExtraProfit.toLocaleString()}
               </div>
-              {selectedUnit !== 'quintal' && (
-                <div className="text-[10px] text-neutral-400 font-mono mt-0.5">+₹{spreadDifference.toLocaleString()} /Q</div>
-              )}
+              <div className="text-[10px] text-neutral-400 font-mono mt-0.5">
+                +₹{Math.round(spreadDifference * unitInfo.factor).toLocaleString()} {unitInfo.short} spread
+              </div>
             </div>
+
+            {includeTransport && (
+              <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/80">
+                <span className="text-[10px] text-amber-800 uppercase font-medium">
+                  Transport Freight (ढुलाई खर्च)
+                </span>
+                <div className="text-lg font-bold font-mono text-amber-900">
+                  -₹{totalTransportCost.toLocaleString()}
+                </div>
+                <div className="text-[10px] text-amber-700 font-mono mt-0.5">
+                  ₹{transportRatePerQ}/Q × {totalQuintals.toFixed(0)}Q
+                </div>
+              </div>
+            )}
 
             <div className="p-3 bg-neutral-950 text-white rounded-xl border border-black">
               <span className="text-[10px] text-neutral-400 uppercase font-medium">
-                Estimated Extra Profit on {quantityQuintals} {unitInfo.label.split(' ')[0]}
+                {includeTransport ? 'Net In-Hand Profit (शुद्ध बचत)' : `Estimated Extra Profit (${quantityQuintals} ${unitInfo.label.split(' ')[0]})`}
               </span>
-              <div className="text-xl font-bold font-mono text-emerald-400">
-                +₹{totalExtraProfit.toLocaleString()}
+              <div className={`text-xl font-bold font-mono ${netExtraProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {netExtraProfit >= 0 ? `+₹${netExtraProfit.toLocaleString()}` : `-₹${Math.abs(netExtraProfit).toLocaleString()}`}
               </div>
+              {includeTransport && (
+                <div className="text-[10px] text-neutral-400 font-mono mt-0.5">
+                  {netExtraProfit > 0 ? '✓ Profitable Trip (फायदेमंद सौदा)' : '⚠️ High freight eats extra price'}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -265,6 +339,9 @@ export default function CompareMandisPage({ onSelectCommodity }) {
                     <span className="text-[10px] text-neutral-400 block font-mono">
                       {diffFromBest === 0 ? 'Top Rate' : `-₹${diffFromBest} /Q`}
                     </span>
+                    <div className="mt-1 pt-1 border-t border-neutral-100 text-[10px] text-neutral-500 font-mono">
+                      उपज मूल्य: ₹{Math.round(item.modal_price * totalQuintals).toLocaleString()}
+                    </div>
                   </div>
                 </div>
               </div>
