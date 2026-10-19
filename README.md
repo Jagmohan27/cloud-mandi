@@ -24,6 +24,15 @@ Designed to be simple, fast, farmer-friendly, and production-ready for Indian fa
   - 1-click star icon (⭐) next to any crop row or detail view to pin it to your personal watchlist.
   - Persisted in browser `localStorage` with a dedicated "⭐ My Watchlist" filter tab.
 
+- **Village WhatsApp Group Daily Rate Bulletin (किसान ग्रुप दैनिक भाव बुलेटिन)**:
+  - 1-tap **"किसान बुलेटिन (Broadcast)"** generator formatted specifically for village WhatsApp groups, panchayat notices, and FPO broadcasts.
+  - Automatically compiles the top 10 market rates of the day with emojis, dates, locations, and direct rate links.
+  - 1-tap direct sharing to WhatsApp and clipboard copy for instantaneous rural group distribution.
+
+- **National Kisan Call Center (1800-180-1551) & APMC Assistance**:
+  - Direct 1-tap quick dial for the Government of India's toll-free **Kisan Call Center (1800-180-1551)** available 6:00 AM to 10:00 PM across 22 regional Indian languages.
+  - Prominently integrated into the rate modal and app footer to empower farmers with legal rights, weight dispute assistance, and crop grievance support.
+
 - **Multilingual Regional Crop Synonyms & Devanagari Search (क्षेत्रीय फसल नाम शब्दकोश)**:
   - Full phonetic Hindi, regional dialect, and Hinglish dictionary resolving terms like *गेहूं, gehu, धान, chawal, सरसों, sarson, आलू, pyaz, कपास, makka, bajra* directly to standard AGMARKNET canonical commodities.
   - Automatically recognizes voice and text queries in local languages and displays bilingual crop badges (*Wheat / गेहूं*).

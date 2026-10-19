@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck, Share2, Award, Copy, Check, Navigation, FileText, Printer } from 'lucide-react';
+import { X, Calendar, MapPin, Tag, TrendingUp, ArrowRight, ShieldCheck, Share2, Award, Copy, Check, Navigation, FileText, Printer, PhoneCall } from 'lucide-react';
 import { api } from '../../services/api';
 import { shareRate, copyRateMessage } from '../../utils/share';
 import { compareWithMSP } from '../../utils/mspData';
@@ -369,6 +369,32 @@ export default function PriceDetailModal({ price, onClose, onExploreTrends }) {
                 <ShieldCheck className="w-4 h-4 text-neutral-400" />
                 <span>Grade: <strong className="text-neutral-900">{price.grade || 'Standard / FAQ'}</strong></span>
               </div>
+            </div>
+
+            {/* Kisan Call Center & APMC Dispute Assistance */}
+            <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-start space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-800 flex-shrink-0 mt-0.5">
+                  <PhoneCall className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-semibold text-neutral-900 flex items-center space-x-1.5">
+                    <span>किसान हेल्पलाइन (Kisan Call Center)</span>
+                    <span className="text-[10px] bg-emerald-600 text-white font-mono px-1.5 py-0.2 rounded font-bold">टोल-फ्री</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-600 mt-0.5">
+                    तौल विवाद, मंडी शिकायत या कृषि सलाह के लिए राष्ट्रीय हेल्पलाइन पर मुफ्त कॉल करें (प्रातः 6:00 से रात्रि 10:00 तक)।
+                  </p>
+                </div>
+              </div>
+              <a
+                href="tel:18001801551"
+                className="inline-flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs shadow-sm transition-colors whitespace-nowrap self-start sm:self-auto"
+                title="Call Kisan Call Center (1800-180-1551)"
+              >
+                <PhoneCall className="w-3.5 h-3.5" />
+                <span>1800-180-1551</span>
+              </a>
             </div>
           </div>
         )}
