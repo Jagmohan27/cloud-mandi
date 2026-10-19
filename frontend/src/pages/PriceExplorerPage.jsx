@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, RefreshCw, X, ChevronLeft, ChevronRight, Download, Printer, SlidersHorizontal, History, Star, Mic, MicOff } from 'lucide-react';
+import { Search, Filter, RefreshCw, X, ChevronLeft, ChevronRight, Download, Printer, SlidersHorizontal, History, Star, Mic, MicOff, Share2, Copy, Check, MessageSquare } from 'lucide-react';
 import { api } from '../services/api';
 import PriceDetailModal from '../components/common/PriceDetailModal';
 import { compareWithMSP } from '../utils/mspData';
@@ -31,6 +31,8 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
   // Selected Modal
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [bulletinModalOpen, setBulletinModalOpen] = useState(false);
+  const [bulletinCopied, setBulletinCopied] = useState(false);
 
   // Recent searches
   const [recentSearches, setRecentSearches] = useState(() => {
@@ -246,6 +248,49 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
     document.body.removeChild(link);
   };
 
+  const generateBulletinText = () => {
+    if (!prices || prices.length === 0) return '';
+    const todayStr = new Date().toLocaleDateString('hi-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+    const topRecords = prices.slice(0, 10);
+    const lines = [
+      `🌾 *दैनिक मंडी भाव बुलेटिन (Daily Mandi Bhav)* 🌾`,
+      `📅 दिनांक: ${todayStr}`,
+      state ? `📍 राज्य: ${state}` : '',
+      district ? `📍 जिला: ${district}` : '',
+      `---------------------------------`,
+      ...topRecords.map((p, idx) => {
+        const hindiName = getHindiCropName(p.commodity);
+        const cropTitle = hindiName ? `${p.commodity} (${hindiName})` : p.commodity;
+        return `${idx + 1}. *${cropTitle}* - ${p.mandi} मंडी\n   💰 भाव: ₹${p.modal_price?.toLocaleString('en-IN')}/क्विंटल (₹${p.minimum_price?.toLocaleString('en-IN')} - ₹${p.maximum_price?.toLocaleString('en-IN')})`;
+      }),
+      `---------------------------------`,
+      `📊 स्रोत: अधिकृत AGMARKNET / Cloud Mandi`,
+      `👉 सभी मंडियों के ताजा भाव देखें: ${typeof window !== 'undefined' ? window.location.origin : 'https://cloud-mandi.onrender.com'}`,
+    ].filter(Boolean);
+
+    return lines.join('\n');
+  };
+
+  const handleCopyBulletin = async () => {
+    try {
+      await navigator.clipboard.writeText(generateBulletinText());
+      setBulletinCopied(true);
+      setTimeout(() => setBulletinCopied(false), 2500);
+    } catch (err) {
+      console.error('Failed to copy bulletin', err);
+    }
+  };
+
+  const handleShareBulletinWhatsApp = () => {
+    const text = generateBulletinText();
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
   const hasActiveFilters = search || commodity || state || district || mandi || date || sortBy !== 'date_desc';
 
   return (
@@ -267,6 +312,14 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
         <div className="flex items-center space-x-3 no-print">
           {prices.length > 0 && (
             <>
+              <button
+                onClick={() => setBulletinModalOpen(true)}
+                className="apple-btn-secondary px-3.5 py-2 rounded-xl text-xs font-medium flex items-center space-x-1.5 shadow-sm text-emerald-800 bg-emerald-50/80 hover:bg-emerald-100 border border-emerald-200/80"
+                title="Generate Daily Rate Bulletin for WhatsApp Groups"
+              >
+                <Share2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>किसान बुलेटिन (Broadcast)</span>
+              </button>
               <button
                 onClick={exportToCSV}
                 className="apple-btn-secondary px-3.5 py-2 rounded-xl text-xs font-medium flex items-center space-x-1.5 shadow-sm"
@@ -782,6 +835,76 @@ export default function PriceExplorerPage({ initialCommodity = '', onExploreTren
             if (onExploreTrends) onExploreTrends(comm);
           }}
         />
+      )}
+
+      {/* WhatsApp Group Rate Bulletin Broadcast Modal */}
+      {bulletinModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity no-print">
+          <div
+            className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-neutral-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between p-6 border-b border-neutral-100">
+              <div>
+                <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-1">
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>किसान व्हाट्सएप ग्रुप बुलेटिन (Group Broadcast)</span>
+                </div>
+                <h2 className="text-xl font-semibold text-neutral-900 tracking-tight">
+                  Daily Mandi Bhav Broadcast
+                </h2>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Formatted for village WhatsApp groups, panchayat notices & FPO broadcasts
+                </p>
+              </div>
+              <button
+                onClick={() => setBulletinModalOpen(false)}
+                className="p-2 rounded-full text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Bulletin Preview */}
+            <div className="p-6 space-y-4">
+              <div className="bg-[#EFEAE2] p-4 rounded-2xl border border-neutral-300/80 shadow-inner">
+                <div className="bg-white p-3.5 rounded-xl shadow-sm text-xs font-mono text-neutral-800 whitespace-pre-wrap leading-relaxed max-h-72 overflow-y-auto">
+                  {generateBulletinText()}
+                </div>
+              </div>
+              <p className="text-[11px] text-neutral-500 text-center">
+                💡 Automatically includes current filter results ({state ? `State: ${state}` : 'All India'}, {district ? `District: ${district}` : 'All Districts'}).
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="p-4 bg-[#F7F7F7] border-t border-neutral-100 flex items-center justify-between">
+              <button
+                onClick={() => setBulletinModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-medium text-neutral-600 hover:bg-neutral-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleCopyBulletin}
+                  className="px-3.5 py-2 rounded-xl text-xs font-medium text-neutral-700 bg-white hover:bg-neutral-100 border border-neutral-200 transition-colors flex items-center space-x-1.5 shadow-sm"
+                >
+                  {bulletinCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-neutral-500" />}
+                  <span>{bulletinCopied ? 'कॉपी हो गया (Copied!)' : 'कॉपी करें (Copy)'}</span>
+                </button>
+                <button
+                  onClick={handleShareBulletinWhatsApp}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#25D366] hover:bg-[#20bd5a] transition-colors flex items-center space-x-1.5 shadow-sm shadow-[#25D366]/20"
+                >
+                  <Share2 className="w-3.5 h-3.5 text-white" />
+                  <span>WhatsApp पर भेजें</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
