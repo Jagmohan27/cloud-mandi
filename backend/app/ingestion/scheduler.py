@@ -36,9 +36,12 @@ async def run_data_sync(source_label: str = "data.gov.in / AGMARKNET") -> Dict[s
 
     try:
         client = GovernmentApiClient()
-        # Fetch initial page of up to 1000 records
-        api_data = await client.fetch_prices(limit=1000, offset=0)
-        records = api_data.get("records", [])
+        # Fetch records with pagination until completed
+        records = await client.fetch_all_prices(batch_size=500, max_records=2500)
+        if not records:
+            # Fallback to single-page fetch
+            api_data = await client.fetch_prices(limit=1000, offset=0)
+            records = api_data.get("records", [])
 
         if not records:
             logger.warning("No records returned from data.gov.in")
@@ -93,10 +96,11 @@ def start_scheduler():
             trigger=IntervalTrigger(hours=settings.SYNC_INTERVAL_HOURS),
             id="mandi_price_sync_job",
             name="Scheduled Mandi Price Synchronization",
+            next_run_time=datetime.now(),
             replace_existing=True
         )
         scheduler.start()
-        logger.info(f"Background scheduler started. Sync interval: every {settings.SYNC_INTERVAL_HOURS} hours.")
+        logger.info(f"Background scheduler started (sync on startup + every {settings.SYNC_INTERVAL_HOURS} hours).")
 
 def stop_scheduler():
     global scheduler

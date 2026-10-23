@@ -57,13 +57,14 @@ def get_districts(
     return [d[0] for d in districts if d[0]]
 
 @router.get("/mandis")
+@router.get("/markets")
 def get_mandis(
     state: Optional[str] = Query(None, description="Filter by state"),
     district: Optional[str] = Query(None, description="Filter by district"),
     db: Session = Depends(get_db)
 ) -> List[Dict[str, Any]]:
     """
-    Get mandis/markets with their location information.
+    Get mandis/markets with their location information (for dropdowns).
     """
     query = db.query(Mandi)
     if state:

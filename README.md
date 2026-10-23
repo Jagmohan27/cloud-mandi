@@ -166,19 +166,47 @@ cloud-mandi/
 
 ---
 
+## How to Get a data.gov.in API Key
+
+To fetch live daily agricultural prices directly from the Government of India's Open Government Data (OGD) platform:
+1. Register for an account at [data.gov.in](https://data.gov.in).
+2. Log in and navigate to **My Account** (top-right menu).
+3. Click on **API Key** in your account dashboard.
+4. Copy your API Key.
+5. Create a `.env` file from `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+6. Paste your key into `.env`:
+   ```env
+   DATA_GOV_API_KEY=your_actual_api_key_here
+   ```
+> [!NOTE]
+> `.env` is listed in `.gitignore` and is never committed to source control. Never hardcode the API key.
+
+---
+
 ## How to Run Locally
 
 ### 1. Start the Backend
 ```bash
 cd backend
+python -m venv venv
 source venv/bin/activate       # Windows: venv\Scripts\activate
+pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 - API Base: `http://localhost:8000/api`
-- Swagger Docs: `http://localhost:8000/api/docs`
+- Swagger Interactive Docs: `http://localhost:8000/api/docs`
 - Health Check: `http://localhost:8000/api/health`
 
-### 2. Start the Frontend
+### 2. Core REST Endpoints
+- `GET /api/prices`: Query mandi rates with pagination & filters (`commodity`, `state`, `district`, `market`/`mandi`, `date`, `sort_by`).
+- `GET /api/commodities`: List all commodities with active price counts for dropdowns.
+- `GET /api/markets`: List all APMC mandis/markets with state and district for dropdowns.
+- `GET /api/prices/trends`: Historical price trends for 7, 30, 90, or 365 days.
+
+### 3. Start the Frontend
 ```bash
 cd frontend
 npm install
@@ -186,18 +214,15 @@ npm run dev
 ```
 - Web Dashboard: `http://localhost:5173`
 
-### 3. Run with Docker (Optional)
-```bash
-docker-compose up --build
-```
-
 ---
 
 ## Testing
 
 Run the automated backend test suite:
 ```bash
-cd backend
-venv/bin/pytest tests/ -v
+backend/venv/bin/pytest backend/tests/ -v
 ```
-All 9 test cases pass (testing health, price queries, filtering, history calculations, deduplication, and authentication).
+Tests cover:
+- Data cleaning logic (`parse_date`, `parse_price`, `normalize_text`).
+- Database deduplication on `(commodity, market, variety, date)` with upsert on price changes.
+- Endpoints (`/prices`, `/markets`, `/commodities`, `/prices/trends`, `/health`, `/statistics`, `/admin`).

@@ -33,6 +33,7 @@ def get_prices(
     state: Optional[str] = Query(None, description="Filter by Indian State"),
     district: Optional[str] = Query(None, description="Filter by District"),
     mandi: Optional[str] = Query(None, description="Filter by Mandi/Market name"),
+    market: Optional[str] = Query(None, description="Filter by Market name (alias for mandi)"),
     commodity: Optional[str] = Query(None, description="Filter by Commodity"),
     variety: Optional[str] = Query(None, description="Filter by Variety"),
     date: Optional[str] = Query(None, description="Filter by exact date (YYYY-MM-DD or DD/MM/YYYY)"),
@@ -49,12 +50,13 @@ def get_prices(
     """
     query = db.query(MandiPrice).join(Commodity, MandiPrice.commodity_id == Commodity.id).join(Mandi, MandiPrice.mandi_id == Mandi.id)
 
+    target_mandi = mandi or market
     if state:
         query = query.filter(Mandi.state.ilike(f"%{state.strip()}%"))
     if district:
         query = query.filter(Mandi.district.ilike(f"%{district.strip()}%"))
-    if mandi:
-        query = query.filter(Mandi.name.ilike(f"%{mandi.strip()}%"))
+    if target_mandi:
+        query = query.filter(Mandi.name.ilike(f"%{target_mandi.strip()}%"))
     if commodity:
         query = query.filter(Commodity.name.ilike(f"%{commodity.strip()}%"))
     if variety:
@@ -130,9 +132,11 @@ def get_latest_prices(limit: int = Query(10, ge=1, le=50), db: Session = Depends
     return [format_price_detail(r) for r in records]
 
 @router.get("/prices/history", response_model=PriceHistoryResponse)
+@router.get("/prices/trends", response_model=PriceHistoryResponse)
 def get_price_history(
     commodity: str = Query(..., description="Commodity name (e.g., Wheat, Onion, Tomato)"),
-    mandi: Optional[str] = Query(None, description="Optional Mandi/Market filter"),
+    mandi: Optional[str] = Query(None, description="Optional Mandi filter"),
+    market: Optional[str] = Query(None, description="Optional Market filter (alias for mandi)"),
     district: Optional[str] = Query(None, description="Optional District filter"),
     state: Optional[str] = Query(None, description="Optional State filter"),
     days: int = Query(30, ge=7, le=365, description="Lookback period in days: 7, 30, 90, 365"),
@@ -141,6 +145,7 @@ def get_price_history(
     """
     Retrieve price trends for charts over 7, 30, 90, or 365 days.
     """
+    target_mandi = mandi or market
     comm = db.query(Commodity).filter(Commodity.name.ilike(commodity.strip())).first()
     if not comm:
         # Return empty history rather than failing
@@ -167,8 +172,8 @@ def get_price_history(
         MandiPrice.price_date <= end_d
     )
 
-    if mandi:
-        query = query.filter(Mandi.name.ilike(f"%{mandi.strip()}%"))
+    if target_mandi:
+        query = query.filter(Mandi.name.ilike(f"%{target_mandi.strip()}%"))
     if district:
         query = query.filter(Mandi.district.ilike(f"%{district.strip()}%"))
     if state:
